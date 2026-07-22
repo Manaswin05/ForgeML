@@ -20,7 +20,7 @@ test: ## Run tests
 clean: ## Clean cache files
 	@python run.py clean
 
-reset: ## Reset models and uploads
+reset: ## Reset models and datasets
 	@python run.py reset
 
 help: ## Show this help message

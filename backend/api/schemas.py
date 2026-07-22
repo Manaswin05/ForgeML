@@ -60,3 +60,9 @@ class ErrorResponse(BaseModel):
     """Error response."""
     error: str
     detail: Optional[str] = None
+
+class AnalysisRequest(BaseModel):
+    """Request for dataset analysis."""
+    target_column: str
+    feature_columns: List[str]
+

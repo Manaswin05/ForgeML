@@ -64,6 +64,20 @@ async def train_page():
     except Exception as e:
         return f"<h1>Error loading page</h1><p>{str(e)}</p>"
 
+@app.get("/analysis", response_class=HTMLResponse)
+async def analysis_page():
+    """Serve dataset analysis page."""
+    try:
+        analysis_path = TEMPLATES_DIR / "analysis.html"
+        if not analysis_path.exists():
+            raise FileNotFoundError(f"Analysis page not found: {analysis_path}")
+        
+        with open(analysis_path, "r", encoding="utf-8") as f:
+            content = f.read()
+        return content
+    except Exception as e:
+        return f"<h1>Error loading page</h1><p>{str(e)}</p>"
+
 @app.get("/predict_ui", response_class=HTMLResponse)
 async def predict_page():
     """Serve prediction page."""

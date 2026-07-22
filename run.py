@@ -9,7 +9,7 @@ Commands:
   test    - Run API tests
   setup   - Install dependencies
   clean   - Clean cache files
-  reset   - Reset models and uploads
+  reset   - Reset models and datasets
 """
 
 import os
@@ -92,13 +92,13 @@ def clean_cache():
             print(f"Removed {cache_dir}")
 
 def reset_data():
-    """Reset models and uploads directories."""
+    """Reset models and datasets directories."""
     print("🔄 Resetting data directories...")
     import shutil
     
     dirs_to_reset = [
         BACKEND_DIR / "models",
-        BACKEND_DIR / "uploads"
+        BACKEND_DIR / "datasets"
     ]
     
     for dir_path in dirs_to_reset:

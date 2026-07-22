@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ForgeML — Data Analysis</title>
+    <link rel="stylesheet" href="/static/style.css?v=2">
+    <style>
+        .analysis-section {
+            margin-top: 30px;
+        }
+        
+        .plot-container {
+            width: 100%;
+            text-align: center;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+        
+        .plot-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .loading-overlay {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 50px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+        
+        .spinner-large {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(99, 102, 241, 0.2);
+            border-top: 5px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        .progress-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        table.metrics-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        table.metrics-table th, table.metrics-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        table.metrics-table th {
+            background-color: #f8fafc;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-shell">
+        <!-- ── Side Navigation ──────────────────────────────────── -->
+        <nav class="side-nav">
+            <div class="side-nav__header">
+                <div class="side-nav__project-name">ForgeML</div>
+                <div class="side-nav__version">v1.0.0</div>
+            </div>
+
+            <div class="side-nav__cta">
+                <a href="/" class="side-nav__cta-btn">
+                    <span class="material-symbols-outlined">add</span>
+                    New Upload
+                </a>
+            </div>
+
+            <ul class="side-nav__links">
+                <li>
+                    <a href="/" class="side-nav__link">
+                        <span class="material-symbols-outlined">dashboard</span>
+                        Dashboard
+                    </a>
+                </li>
+                <li>
+                    <a href="/" class="side-nav__link">
+                        <span class="material-symbols-outlined">database</span>
+                        Datasets
+                    </a>
+                </li>
+                <li>
+                    <a href="/train" class="side-nav__link">
+                        <span class="material-symbols-outlined">science</span>
+                        Train Model
+                    </a>
+                </li>
+                <li>
+                    <a href="/predict_ui" class="side-nav__link">
+                        <span class="material-symbols-outlined">online_prediction</span>
+                        Predict
+                    </a>
+                </li>
+                <li>
+                    <a href="/analysis" class="side-nav__link active">
+                        <span class="material-symbols-outlined">analytics</span>
+                        Analysis
+                    </a>
+                </li>
+            </ul>
+
+            <ul class="side-nav__footer">
+                <li>
+                    <a href="/docs" class="side-nav__link">
+                        <span class="material-symbols-outlined">description</span>
+                        API Docs
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="side-nav__link">
+                        <span class="material-symbols-outlined">help</span>
+                        Support
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- ── Main Content ─────────────────────────────────────── -->
+        <main class="main-content">
+            <div class="page-body">
+                <header class="page-header">
+                    <div>
+                        <h1 class="page-header__title">Data Analysis</h1>
+                        <p class="page-header__subtitle">Select target and feature columns to visualize insights and compare model approaches.</p>
+                    </div>
+                </header>
+
+                <div id="noDataAlert" class="alert alert--warning" style="display: none; margin-bottom: 20px;">
+                    No dataset loaded. Please go to the Dashboard and upload a dataset first.
+                </div>
+
+                <div id="mainFormArea" class="content-grid" style="display: none;">
+                    <div class="card" style="grid-column: 1 / -1;">
+                        <div class="card__header">
+                            <span class="card__header-title">Feature Selection</span>
+                        </div>
+                        <div class="card__body">
+                            <div class="form-group" style="margin-bottom: 20px;">
+                                <label class="form-label">Target Column (y)</label>
+                                <select id="targetSelect" class="form-control" style="max-width: 300px;"></select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Feature Columns (X)</label>
+                                <div id="featuresList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin-top: 10px;">
+                                    <!-- Checkboxes will be injected here -->
+                                </div>
+                            </div>
+                            
+                            <div style="margin-top: 20px; text-align: right;">
+                                <button id="analyzeBtn" class="btn btn-primary">Generate Analysis</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="loadingOverlay" class="loading-overlay">
+                    <div class="spinner-large"></div>
+                    <div class="progress-text" id="progressText">Analyzing dataset... 0%</div>
+                    <p style="margin-top: 10px; color: #64748b;">Computing correlations, generating plots, and evaluating baseline models. This might take a few moments depending on dataset size.</p>
+                </div>
+
+                <div id="resultsArea" style="display: none;">
+                    <div class="content-grid content-grid--2col analysis-section">
+                        <!-- Heatmap -->
+                        <div class="card" style="grid-column: 1 / -1;">
+                            <div class="card__header">
+                                <span class="card__header-title">Correlation Matrix Heatmap</span>
+                            </div>
+                            <div class="card__body">
+                                <div class="plot-container" id="heatmapContainer"></div>
+                            </div>
+                        </div>
+
+                        <!-- Pairplot -->
+                        <div class="card">
+                            <div class="card__header">
+                                <span class="card__header-title">Pairplot</span>
+                            </div>
+                            <div class="card__body">
+                                <div class="plot-container" id="pairplotContainer"></div>
+                            </div>
+                        </div>
+
+                        <!-- Boxplots -->
+                        <div class="card">
+                            <div class="card__header">
+                                <span class="card__header-title">Boxplots (Feature vs Target)</span>
+                            </div>
+                            <div class="card__body">
+                                <div class="plot-container" id="boxplotsContainer"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Model comparison table -->
+                    <div class="card analysis-section">
+                        <div class="card__header">
+                            <span class="card__header-title">Baseline Model Comparison</span>
+                        </div>
+                        <div class="card__body">
+                            <table class="metrics-table">
+                                <thead>
+                                    <tr>
+                                        <th>Model Approach</th>
+                                        <th id="metric1Header">Metric 1</th>
+                                        <th id="metric2Header">Metric 2</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="modelsTableBody">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_BASE = '/api';
+        let columns = [];
+        let simulationInterval;
+
+        async function init() {
+            try {
+                const statusRes = await fetch(`${API_BASE}/status`);
+                const status = await statusRes.json();
+                
+                if (!status.has_data) {
+                    document.getElementById('noDataAlert').style.display = 'block';
+                    return;
+                }
+                
+                document.getElementById('mainFormArea').style.display = 'block';
+                
+                const profileRes = await fetch(`${API_BASE}/profile`);
+                const profile = await profileRes.json();
+                
+                columns = profile.column_names;
+                populateForm();
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function populateForm() {
+            const targetSelect = document.getElementById('targetSelect');
+            const featuresList = document.getElementById('featuresList');
+            
+            targetSelect.innerHTML = '';
+            featuresList.innerHTML = '';
+            
+            columns.forEach(col => {
+                // target
+                const option = document.createElement('option');
+                option.value = col;
+                option.textContent = col;
+                targetSelect.appendChild(option);
+                
+                // feature
+                const div = document.createElement('div');
+                div.style.display = 'flex';
+                div.style.alignItems = 'center';
+                div.style.gap = '8px';
+                
+                const cb = document.createElement('input');
+                cb.type = 'checkbox';
+                cb.value = col;
+                cb.className = 'feature-cb';
+                cb.checked = true; // default checked
+                cb.id = 'cb_' + String(col).replace(/[^A-Za-z0-9_-]/g, '_');
+                
+                const label = document.createElement('label');
+                label.htmlFor = cb.id;
+                label.textContent = col;
+                
+                div.appendChild(cb);
+                div.appendChild(label);
+                featuresList.appendChild(div);
+            });
+            
+            // Uncheck the last column since it's typically target
+            if (columns.length > 0) {
+                targetSelect.value = columns[columns.length - 1];
+                const lastCb = document.getElementById('cb_' + String(columns[columns.length - 1]).replace(/[^A-Za-z0-9_-]/g, '_'));
+                if (lastCb) lastCb.checked = false;
+            }
+        }
+
+        document.getElementById('targetSelect').addEventListener('change', (e) => {
+            const target = e.target.value;
+            document.querySelectorAll('.feature-cb').forEach(cb => {
+                if (cb.value === target) cb.checked = false;
+            });
+        });
+
+        document.getElementById('analyzeBtn').addEventListener('click', async () => {
+            const target_column = document.getElementById('targetSelect').value;
+            const feature_columns = Array.from(document.querySelectorAll('.feature-cb:checked')).map(cb => cb.value);
+            
+            if (feature_columns.length === 0) {
+                alert("Please select at least one feature column.");
+                return;
+            }
+            if (feature_columns.includes(target_column)) {
+                alert("Target column cannot be in feature columns.");
+                return;
+            }
+            
+            // Show loading
+            document.getElementById('resultsArea').style.display = 'none';
+            document.getElementById('loadingOverlay').style.display = 'flex';
+            
+            // Simulate progress percentage
+            let progress = 0;
+            const progressText = document.getElementById('progressText');
+            if (simulationInterval) clearInterval(simulationInterval);
+            simulationInterval = setInterval(() => {
+                if (progress < 95) {
+                    progress += Math.floor(Math.random() * 5) + 1;
+                    if (progress > 95) progress = 95;
+                    progressText.textContent = `Analyzing dataset... ${progress}%`;
+                }
+            }, 300);
+            
+            try {
+                const res = await fetch(`${API_BASE}/analysis`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ target_column, feature_columns })
+                });
+                
+                const data = await res.json();
+                
+                clearInterval(simulationInterval);
+                progressText.textContent = `Analyzing dataset... 100%`;
+                
+                if (!res.ok) {
+                    throw new Error(data.detail || "Analysis failed");
+                }
+                
+                setTimeout(() => {
+                    document.getElementById('loadingOverlay').style.display = 'none';
+                    renderResults(data);
+                }, 500);
+                
+            } catch (err) {
+                clearInterval(simulationInterval);
+                document.getElementById('loadingOverlay').style.display = 'none';
+                alert("Error generating analysis: " + err.message);
+            }
+        });
+        
+        function renderResults(data) {
+            document.getElementById('resultsArea').style.display = 'block';
+            
+            // Heatmap
+            const heatmapCont = document.getElementById('heatmapContainer');
+            if (data.correlation_matrix) {
+                heatmapCont.innerHTML = `<img src="${data.correlation_matrix}" alt="Correlation Matrix">`;
+            } else {
+                heatmapCont.innerHTML = '<p>Not enough numeric columns for correlation matrix.</p>';
+            }
+            
+            // Pairplot
+            const pairplotCont = document.getElementById('pairplotContainer');
+            if (data.pairplot) {
+                pairplotCont.innerHTML = `<img src="${data.pairplot}" alt="Pairplot">`;
+            } else {
+                pairplotCont.innerHTML = '<p>Unable to generate pairplot.</p>';
+            }
+            
+            // Boxplots
+            const boxplotsCont = document.getElementById('boxplotsContainer');
+            if (data.boxplots) {
+                boxplotsCont.innerHTML = `<img src="${data.boxplots}" alt="Boxplots">`;
+            } else {
+                boxplotsCont.innerHTML = '<p>Unable to generate boxplots (no numeric features).</p>';
+            }
+            
+            // Models table
+            const tbody = document.getElementById('modelsTableBody');
+            tbody.innerHTML = '';
+            
+            if (data.model_comparisons && data.model_comparisons.length > 0) {
+                document.getElementById('metric1Header').textContent = data.model_comparisons[0].metric1_name;
+                document.getElementById('metric2Header').textContent = data.model_comparisons[0].metric2_name;
+                
+                data.model_comparisons.forEach(model => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td style="font-weight: 600;">${model.model}</td>
+                        <td><span class="metric-badge" style="padding: 4px 8px; font-size: 0.9em; background: #6366f1; color: white; border-radius: 4px;">${model.metric1_value}</span></td>
+                        <td><span class="metric-badge" style="padding: 4px 8px; font-size: 0.9em; background: #ec4899; color: white; border-radius: 4px;">${model.metric2_value}</span></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } else {
+                tbody.innerHTML = '<tr><td colspan="3">No baseline models could be evaluated.</td></tr>';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
