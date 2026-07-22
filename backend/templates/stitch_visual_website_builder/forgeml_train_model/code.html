@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ForgeML - Model Training Configuration</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-error-container": "#ffdad6",
+                        "on-tertiary": "#2f3131",
+                        "primary": "#ffffff",
+                        "on-surface-variant": "#c4c7c8",
+                        "on-surface": "#e5e2e1",
+                        "error": "#ffb4ab",
+                        "on-tertiary-fixed": "#1a1c1c",
+                        "primary-fixed": "#e2e2e2",
+                        "secondary-fixed": "#e4e2e1",
+                        "surface-container": "#201f1f",
+                        "on-primary-fixed-variant": "#454747",
+                        "secondary-container": "#474746",
+                        "surface-variant": "#353434",
+                        "background": "#141313",
+                        "on-tertiary-container": "#636565",
+                        "outline-variant": "#444748",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "primary-fixed-dim": "#c6c6c7",
+                        "surface-container-high": "#2a2a2a",
+                        "error-container": "#93000a",
+                        "on-secondary-fixed": "#1b1c1b",
+                        "surface-container-highest": "#353434",
+                        "on-primary": "#2f3131",
+                        "surface-bright": "#3a3939",
+                        "secondary": "#c8c6c5",
+                        "on-secondary-fixed-variant": "#474746",
+                        "surface": "#0A0A0A",
+                        "tertiary": "#ffffff",
+                        "surface-container-lowest": "#0e0e0e",
+                        "inverse-primary": "#5d5f5f",
+                        "on-background": "#e5e2e1",
+                        "on-secondary": "#303030",
+                        "tertiary-fixed": "#e2e2e2",
+                        "outline": "#262626",
+                        "on-error": "#690005",
+                        "on-tertiary-fixed-variant": "#454747",
+                        "on-primary-container": "#636565",
+                        "tertiary-container": "#e2e2e2",
+                        "inverse-surface": "#e5e2e1",
+                        "surface-tint": "#c6c6c7",
+                        "surface-container-low": "#1c1b1b",
+                        "on-primary-fixed": "#1a1c1c",
+                        "inverse-on-surface": "#313030",
+                        "surface-dim": "#141313",
+                        "primary-container": "#e2e2e2",
+                        "tertiary-fixed-dim": "#c6c6c7",
+                        "on-secondary-container": "#b6b5b4"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "element-gap": "8px",
+                        "gutter": "16px",
+                        "container-padding": "24px",
+                        "stack-compact": "4px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["JetBrains Mono", "monospace"],
+                        "body-md": ["Geist", "sans-serif"],
+                        "display-data": ["JetBrains Mono", "monospace"],
+                        "headline-md": ["Geist", "sans-serif"],
+                        "headline-lg": ["Geist", "sans-serif"],
+                        "body-lg": ["Geist", "sans-serif"],
+                        "label-sm": ["JetBrains Mono", "monospace"]
+                    },
+                    "fontSize": {
+                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "display-data": ["48px", { "lineHeight": "48px", "letterSpacing": "-0.04em", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-sm": ["10px", { "lineHeight": "14px", "letterSpacing": "0.08em", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        /* Custom scrollbar for technical panes */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #353434; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #444748; }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md antialiased overflow-hidden flex h-screen">
+<!-- SideNavBar (Shared Component) -->
+<nav class="h-screen w-64 fixed left-0 top-0 border-r border-outline dark:border-outline bg-surface-container-low dark:bg-surface-container-low flex flex-col py-container-padding gap-element-gap z-40">
+<!-- Header -->
+<div class="px-container-padding mb-gutter">
+<div class="text-label-md font-label-md font-bold text-primary mb-1">Project Alpha</div>
+<div class="text-label-sm font-label-sm text-on-surface-variant">v2.4.0-stable</div>
+</div>
+<!-- CTA -->
+<div class="px-container-padding mb-gutter">
+<button class="w-full flex items-center justify-center gap-2 bg-primary text-on-primary py-2 rounded text-label-md font-label-md hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined" style="font-size: 16px;">add</span>
+                New Experiment
+            </button>
+</div>
+<!-- Main Navigation -->
+<div class="flex flex-col gap-unit flex-1">
+<a class="flex items-center gap-3 px-container-padding py-2 text-label-md font-label-md text-on-surface-variant hover:text-on-surface hover:bg-surface-variant dark:hover:bg-surface-variant transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-size: 18px;">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center gap-3 px-container-padding py-2 text-label-md font-label-md text-on-surface-variant hover:text-on-surface hover:bg-surface-variant dark:hover:bg-surface-variant transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-size: 18px;">database</span>
+                Datasets
+            </a>
+<a class="flex items-center gap-3 px-container-padding py-2 text-label-md font-label-md text-on-surface-variant hover:text-on-surface hover:bg-surface-variant dark:hover:bg-surface-variant transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-size: 18px;">science</span>
+                Experiments
+            </a>
+<!-- Active State Navigation Item -->
+<a class="flex items-center gap-3 px-container-padding py-2 text-label-md font-label-md bg-primary text-on-primary rounded-none translate-x-1 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-weight="fill" style="font-variation-settings: 'FILL' 1;">account_tree</span>
+                Pipeline
+            </a>
+</div>
+<!-- Footer Navigation -->
+<div class="flex flex-col gap-unit mt-auto">
+<a class="flex items-center gap-3 px-container-padding py-2 text-label-md font-label-md text-on-surface-variant hover:text-on-surface hover:bg-surface-variant dark:hover:bg-surface-variant transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-size: 18px;">description</span>
+                Docs
+            </a>
+<a class="flex items-center gap-3 px-container-padding py-2 text-label-md font-label-md text-on-surface-variant hover:text-on-surface hover:bg-surface-variant dark:hover:bg-surface-variant transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-size: 18px;">help</span>
+                Support
+            </a>
+</div>
+</nav>
+<!-- Main Content Wrapper -->
+<main class="ml-64 flex-1 flex flex-col h-screen overflow-hidden">
+<!-- TopNavBar (Shared Component) -->
+<header class="flex justify-between items-center w-full px-container-padding h-16 sticky top-0 z-50 bg-background border-b border-outline dark:border-outline">
+<div class="flex items-center gap-8">
+<!-- Brand -->
+<div class="text-headline-md font-headline-md font-bold text-primary dark:text-primary tracking-tight">
+                    ForgeML
+                </div>
+<!-- Navigation Links -->
+<nav class="flex gap-6 pt-1">
+<a class="text-label-md font-label-md text-on-surface-variant dark:text-on-surface-variant hover:text-primary transition-colors pb-1" href="#">Upload</a>
+<!-- Active State -->
+<a class="text-label-md font-label-md text-primary dark:text-primary border-b-2 border-primary pb-1 opacity-80 transition-all duration-150" href="#">Train</a>
+<a class="text-label-md font-label-md text-on-surface-variant dark:text-on-surface-variant hover:text-primary transition-colors pb-1" href="#">Models</a>
+</nav>
+</div>
+<!-- Trailing Icons -->
+<div class="flex items-center gap-4">
+<button class="text-on-surface-variant hover:text-primary transition-colors p-1 rounded hover:bg-surface-container dark:hover:bg-surface-container transition-colors duration-200">
+<span class="material-symbols-outlined">terminal</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors p-1 rounded hover:bg-surface-container dark:hover:bg-surface-container transition-colors duration-200">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors p-1 rounded hover:bg-surface-container dark:hover:bg-surface-container transition-colors duration-200">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Scrollable Canvas -->
+<div class="flex-1 overflow-y-auto p-container-padding">
+<div class="max-w-7xl mx-auto flex flex-col gap-gutter">
+<!-- Page Header -->
+<div class="flex justify-between items-end mb-gutter border-b border-outline pb-element-gap">
+<div>
+<h1 class="text-headline-lg font-headline-lg text-primary tracking-tight mb-2">Model Configuration</h1>
+<p class="text-body-md font-body-md text-on-surface-variant">Configure training parameters and preprocessing pipeline for current dataset.</p>
+</div>
+<div class="text-label-md font-label-md text-on-surface-variant flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary-fixed-dim"></span>
+                        Dataset: <span class="text-primary">customer_churn_v2.csv</span>
+</div>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-gutter items-start">
+<!-- Left Column: Data Selection (Steps 1 & 2) -->
+<div class="xl:col-span-4 flex flex-col gap-gutter">
+<!-- Step 1: Target Variable -->
+<section class="bg-surface-container border border-outline rounded p-gutter flex flex-col">
+<h2 class="text-headline-md font-headline-md text-primary mb-element-gap flex items-center gap-2">
+<span class="material-symbols-outlined text-outline-variant" style="font-size: 20px;">target</span>
+                                Target Selection
+                            </h2>
+<p class="text-label-sm font-label-sm text-on-surface-variant mb-gutter">Select the dependent variable to predict.</p>
+<label class="text-label-md font-label-md text-on-surface-variant mb-unit block">Target Column</label>
+<div class="relative">
+<select class="w-full bg-background border border-outline rounded p-2 text-label-md font-label-md text-primary focus:ring-1 focus:ring-primary focus:border-primary appearance-none pr-8">
+<option disabled="" value="">Select target...</option>
+<option selected="" value="churn">churn (Boolean)</option>
+<option value="ltv">lifetime_value (Float)</option>
+<option value="segment">customer_segment (String)</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-2 pointer-events-none text-on-surface-variant">arrow_drop_down</span>
+</div>
+</section>
+<!-- Step 2: Feature Selection -->
+<section class="bg-surface-container border border-outline rounded p-gutter flex flex-col flex-1">
+<div class="flex justify-between items-center mb-element-gap">
+<h2 class="text-headline-md font-headline-md text-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-outline-variant" style="font-size: 20px;">view_column</span>
+                                    Features
+                                </h2>
+<span class="text-label-sm font-label-sm text-on-surface-variant bg-surface-variant px-2 py-1 rounded">12 / 15 Selected</span>
+</div>
+<p class="text-label-sm font-label-sm text-on-surface-variant mb-gutter">Select independent variables for training.</p>
+<!-- Search / Filter -->
+<div class="relative mb-element-gap">
+<span class="material-symbols-outlined absolute left-2 top-2 text-on-surface-variant" style="font-size: 16px;">search</span>
+<input class="w-full bg-background border border-outline rounded py-1.5 pl-8 pr-2 text-label-md font-label-md text-primary focus:ring-1 focus:ring-primary focus:border-primary" placeholder="Filter columns..." type="text"/>
+</div>
+<!-- Scrollable Checkbox List -->
+<div class="flex-1 bg-background border border-outline rounded overflow-y-auto max-h-64 p-element-gap">
+<div class="flex flex-col gap-1">
+<!-- Feature Item -->
+<label class="flex items-center gap-3 p-1.5 hover:bg-surface-variant rounded cursor-pointer group">
+<input checked="" class="form-checkbox h-4 w-4 text-primary bg-background border-outline rounded-sm focus:ring-primary focus:ring-offset-background" type="checkbox"/>
+<span class="text-label-md font-label-md text-primary group-hover:text-primary-fixed transition-colors">customer_id</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant ml-auto">int64</span>
+</label>
+<label class="flex items-center gap-3 p-1.5 hover:bg-surface-variant rounded cursor-pointer group">
+<input checked="" class="form-checkbox h-4 w-4 text-primary bg-background border-outline rounded-sm focus:ring-primary focus:ring-offset-background" type="checkbox"/>
+<span class="text-label-md font-label-md text-primary group-hover:text-primary-fixed transition-colors">age</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant ml-auto">float64</span>
+</label>
+<label class="flex items-center gap-3 p-1.5 hover:bg-surface-variant rounded cursor-pointer group">
+<input checked="" class="form-checkbox h-4 w-4 text-primary bg-background border-outline rounded-sm focus:ring-primary focus:ring-offset-background" type="checkbox"/>
+<span class="text-label-md font-label-md text-primary group-hover:text-primary-fixed transition-colors">monthly_charges</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant ml-auto">float64</span>
+</label>
+<label class="flex items-center gap-3 p-1.5 hover:bg-surface-variant rounded cursor-pointer group">
+<input checked="" class="form-checkbox h-4 w-4 text-primary bg-background border-outline rounded-sm focus:ring-primary focus:ring-offset-background" type="checkbox"/>
+<span class="text-label-md font-label-md text-primary group-hover:text-primary-fixed transition-colors">total_charges</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant ml-auto">float64</span>
+</label>
+<label class="flex items-center gap-3 p-1.5 hover:bg-surface-variant rounded cursor-pointer group">
+<input checked="" class="form-checkbox h-4 w-4 text-primary bg-background border-outline rounded-sm focus:ring-primary focus:ring-offset-background" type="checkbox"/>
+<span class="text-label-md font-label-md text-primary group-hover:text-primary-fixed transition-colors">tenure_months</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant ml-auto">int64</span>
+</label>
+<label class="flex items-center gap-3 p-1.5 hover:bg-surface-variant rounded cursor-pointer group">
+<input class="form-checkbox h-4 w-4 text-primary bg-background border-outline rounded-sm focus:ring-primary focus:ring-offset-background" type="checkbox"/>
+<span class="text-label-md font-label-md text-on-surface-variant group-hover:text-primary transition-colors">ip_address</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant ml-auto opacity-50">string</span>
+</label>
+<label class="flex items-center gap-3 p-1.5 hover:bg-surface-variant rounded cursor-pointer group">
+<input checked="" class="form-checkbox h-4 w-4 text-primary bg-background border-outline rounded-sm focus:ring-primary focus:ring-offset-background" type="checkbox"/>
+<span class="text-label-md font-label-md text-primary group-hover:text-primary-fixed transition-colors">has_internet_service</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant ml-auto">bool</span>
+</label>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Column: Preprocessing & Model (Steps 3 & 4) -->
+<div class="xl:col-span-8 flex flex-col gap-gutter">
+<!-- Step 3: Data Cleaning -->
+<section class="bg-surface-container border border-outline rounded p-gutter">
+<h2 class="text-headline-md font-headline-md text-primary mb-element-gap flex items-center gap-2">
+<span class="material-symbols-outlined text-outline-variant" style="font-size: 20px;">mop</span>
+                                Pipeline Preprocessing
+                            </h2>
+<p class="text-label-sm font-label-sm text-on-surface-variant mb-gutter pb-element-gap border-b border-outline">Define automated data cleaning and scaling steps applied before training.</p>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-gutter">
+<!-- Missing Values -->
+<div class="p-element-gap border border-outline rounded bg-background">
+<label class="text-label-md font-label-md text-on-surface-variant mb-unit block uppercase tracking-wider text-[10px]">Missing Values</label>
+<div class="flex flex-col gap-2 mt-2">
+<label class="flex items-center gap-2 cursor-pointer">
+<input class="form-radio text-primary bg-background border-outline focus:ring-primary" name="missing_vals" type="radio"/>
+<span class="text-label-md font-label-md text-primary">Drop rows</span>
+</label>
+<label class="flex items-center gap-2 cursor-pointer">
+<input checked="" class="form-radio text-primary bg-background border-outline focus:ring-primary" name="missing_vals" type="radio"/>
+<span class="text-label-md font-label-md text-primary">Impute (Mean/Mode)</span>
+</label>
+<label class="flex items-center gap-2 cursor-pointer">
+<input class="form-radio text-primary bg-background border-outline focus:ring-primary" name="missing_vals" type="radio"/>
+<span class="text-label-md font-label-md text-on-surface-variant">Ignore (Algorithms handle)</span>
+</label>
+</div>
+</div>
+<!-- Scaling & Encoding -->
+<div class="p-element-gap border border-outline rounded bg-background">
+<label class="text-label-md font-label-md text-on-surface-variant mb-unit block uppercase tracking-wider text-[10px]">Transformations</label>
+<div class="flex flex-col gap-2 mt-2">
+<label class="flex items-center justify-between cursor-pointer group">
+<span class="text-label-md font-label-md text-primary group-hover:text-primary-fixed">Standard Scale (Numeric)</span>
+<!-- Custom Toggle -->
+<div class="relative inline-block w-8 h-4 rounded-full bg-primary transition-colors duration-200 ease-in-out">
+<span class="absolute left-1 top-0.5 bg-background w-3 h-3 rounded-full transition-transform duration-200 ease-in-out translate-x-4"></span>
+</div>
+</label>
+<label class="flex items-center justify-between cursor-pointer group">
+<span class="text-label-md font-label-md text-primary group-hover:text-primary-fixed">One-Hot Encode (Categorical)</span>
+<div class="relative inline-block w-8 h-4 rounded-full bg-primary transition-colors duration-200 ease-in-out">
+<span class="absolute left-1 top-0.5 bg-background w-3 h-3 rounded-full transition-transform duration-200 ease-in-out translate-x-4"></span>
+</div>
+</label>
+<label class="flex items-center justify-between cursor-pointer group">
+<span class="text-label-md font-label-md text-on-surface-variant group-hover:text-primary">Handle Class Imbalance (SMOTE)</span>
+<div class="relative inline-block w-8 h-4 rounded-full bg-outline transition-colors duration-200 ease-in-out">
+<span class="absolute left-1 top-0.5 bg-on-surface-variant w-3 h-3 rounded-full transition-transform duration-200 ease-in-out translate-x-0"></span>
+</div>
+</label>
+</div>
+</div>
+</div>
+</section>
+<!-- Step 4: Model & Hyperparameters -->
+<section class="bg-surface-container border border-outline rounded flex flex-col">
+<!-- Model Selector Header -->
+<div class="p-gutter border-b border-outline bg-surface-container-high rounded-t flex justify-between items-center">
+<div>
+<h2 class="text-headline-md font-headline-md text-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-outline-variant" style="font-size: 20px;">psychology</span>
+                                        Algorithm Selection
+                                    </h2>
+</div>
+<div class="flex gap-2">
+<button class="px-3 py-1 bg-primary text-on-primary font-label-md text-label-md rounded border border-primary">XGBoost</button>
+<button class="px-3 py-1 bg-background text-on-surface-variant font-label-md text-label-md rounded border border-outline hover:text-primary transition-colors">Random Forest</button>
+<button class="px-3 py-1 bg-background text-on-surface-variant font-label-md text-label-md rounded border border-outline hover:text-primary transition-colors">Log Reg</button>
+</div>
+</div>
+<!-- Hyperparameters Body -->
+<div class="p-gutter grid grid-cols-1 md:grid-cols-2 gap-gutter">
+<div class="flex flex-col gap-unit">
+<div class="flex justify-between">
+<label class="text-label-md font-label-md text-on-surface-variant">n_estimators</label>
+<span class="text-label-md font-label-md text-primary">100</span>
+</div>
+<input class="w-full accent-primary bg-outline h-1 rounded-full appearance-none outline-none" max="500" min="10" type="range" value="100"/>
+</div>
+<div class="flex flex-col gap-unit">
+<div class="flex justify-between">
+<label class="text-label-md font-label-md text-on-surface-variant">learning_rate</label>
+<span class="text-label-md font-label-md text-primary">0.05</span>
+</div>
+<input class="w-full accent-primary bg-outline h-1 rounded-full appearance-none outline-none" max="0.3" min="0.001" step="0.001" type="range" value="0.05"/>
+</div>
+<div class="flex flex-col gap-unit">
+<label class="text-label-md font-label-md text-on-surface-variant">max_depth</label>
+<input class="w-full bg-background border border-outline rounded p-2 text-label-md font-label-md text-primary focus:ring-1 focus:ring-primary focus:border-primary" type="number" value="6"/>
+</div>
+<div class="flex flex-col gap-unit">
+<label class="text-label-md font-label-md text-on-surface-variant">objective</label>
+<div class="relative">
+<select class="w-full bg-background border border-outline rounded p-2 text-label-md font-label-md text-primary focus:ring-1 focus:ring-primary focus:border-primary appearance-none pr-8">
+<option value="binary:logistic">binary:logistic</option>
+<option value="reg:squarederror">reg:squarederror</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-2 pointer-events-none text-on-surface-variant">arrow_drop_down</span>
+</div>
+</div>
+</div>
+</section>
+</div>
+</div>
+<!-- Footer Action Area -->
+<div class="mt-gutter flex justify-end pb-container-padding">
+<button class="bg-primary text-on-primary font-headline-md text-body-lg px-8 py-3 rounded hover:bg-primary-fixed-dim transition-colors shadow-lg shadow-primary/10 flex items-center gap-2 group">
+<span class="material-symbols-outlined group-hover:rotate-180 transition-transform duration-500">model_training</span>
+                        Initialize Training Run
+                    </button>
+</div>
+</div>
+</div>
+</main>
+</body></html>

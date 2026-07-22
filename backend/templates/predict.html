@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ForgeML — Predict</title>
+    <link rel="stylesheet" href="/static/style.css?v=2">
+    <style>
+        .json-input {
+            width: 100%;
+            height: 200px;
+            background-color: var(--surface-container-lowest);
+            color: var(--on-surface);
+            border: 1px solid var(--outline);
+            border-radius: var(--radius);
+            padding: 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            resize: vertical;
+        }
+        
+        .json-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .json-output {
+            background-color: var(--surface-container-lowest);
+            border: 1px solid var(--outline);
+            border-radius: var(--radius);
+            color: var(--on-surface);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            padding: 16px;
+            white-space: pre-wrap;
+            overflow-x: auto;
+            flex: 1;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            background-color: #333;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .status-badge.success {
+            background-color: #1b4d22;
+            color: #4CAF50;
+        }
+
+        .status-badge.error {
+            background-color: #4d1b1b;
+            color: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-shell">
+        <!-- ── Side Navigation ──────────────────────────────────── -->
+        <nav class="side-nav">
+            <div class="side-nav__header">
+                <div class="side-nav__project-name">ForgeML</div>
+                <div class="side-nav__version">v1.0.0</div>
+            </div>
+
+            <div class="side-nav__cta">
+                <a href="/" class="side-nav__cta-btn">
+                    <span class="material-symbols-outlined">add</span>
+                    New Upload
+                </a>
+            </div>
+
+            <ul class="side-nav__links">
+                <li>
+                    <a href="/" class="side-nav__link">
+                        <span class="material-symbols-outlined">dashboard</span>
+                        Dashboard
+                    </a>
+                </li>
+                <li>
+                    <a href="/" class="side-nav__link">
+                        <span class="material-symbols-outlined">database</span>
+                        Datasets
+                    </a>
+                </li>
+                <li>
+                    <a href="/train" class="side-nav__link">
+                        <span class="material-symbols-outlined">science</span>
+                        Train Model
+                    </a>
+                </li>
+                <li>
+                    <a href="/predict_ui" class="side-nav__link active">
+                        <span class="material-symbols-outlined">online_prediction</span>
+                        Predict
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="side-nav__link">
+                        <span class="material-symbols-outlined">account_tree</span>
+                        Pipeline
+                    </a>
+                </li>
+            </ul>
+
+            <ul class="side-nav__footer">
+                <li>
+                    <a href="/docs" class="side-nav__link">
+                        <span class="material-symbols-outlined">description</span>
+                        API Docs
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="side-nav__link">
+                        <span class="material-symbols-outlined">help</span>
+                        Support
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- ── Main Content ─────────────────────────────────────── -->
+        <main class="main-content">
+            <div class="page-body-scroll">
+                <div class="page-inner">
+                    <!-- Header -->
+                    <header class="page-header">
+                <div class="page-header__title-group">
+                    <h1 class="page-header__title">Model Prediction API Testing</h1>
+                    <p class="page-header__subtitle">Upload a trained model (.pkl) and test it with raw JSON input.</p>
+                </div>
+            </header>
+
+            <!-- Alerts -->
+            <div id="alertBox" class="alert hidden"></div>
+
+            <div class="bento-grid" style="margin-top: var(--gutter);">
+                <!-- Left Column: Upload & Input -->
+                <div class="bento-col-6">
+                    <div class="bento-inner">
+                        <!-- Upload Section -->
+                        <section class="section">
+                            <h2 class="section__title">
+                                <span class="material-symbols-outlined">upload_file</span>
+                                Upload Model
+                            </h2>
+                            
+                            <div class="drop-zone" id="dropZone" style="min-height: 120px; margin-top: 16px;">
+                                <input type="file" id="fileInput" class="drop-zone__input" accept=".pkl">
+                                <span class="material-symbols-outlined drop-zone__icon" style="font-size: 32px; margin-bottom: 8px;">cloud_upload</span>
+                                <div class="drop-zone__text">Drag & drop .pkl file here, or click to browse.</div>
+                            </div>
+                            
+                            <div id="modelInfo" class="hidden" style="margin-top: 16px; padding: 12px; background: var(--surface-container-high); border-radius: var(--radius-sm);">
+                                <div style="font-size: 13px; color: var(--on-surface-variant);">Loaded Model:</div>
+                                <div id="modelFileName" style="font-family: 'JetBrains Mono'; font-size: 14px; font-weight: 500; margin-top: 4px; color: var(--primary);"></div>
+                            </div>
+                        </section>
+
+                        <!-- Query Section -->
+                        <section class="section" style="flex: 1;">
+                            <h2 class="section__title">
+                                <span class="material-symbols-outlined">data_object</span>
+                                Input JSON Parameters
+                            </h2>
+                            <p class="section__desc">Provide the input features as a raw JSON object to simulate an API request.</p>
+                            
+                            <div style="margin-top: 16px;">
+                                <textarea id="jsonInput" class="json-input" placeholder='{\n  "feature_1": 12.5,\n  "feature_2": "category_A"\n}'></textarea>
+                            </div>
+
+                            <button id="predictBtn" class="btn btn-lg btn-primary" style="margin-top: 16px; width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px;" disabled>
+                                <span class="material-symbols-outlined" style="font-size: 20px;">play_arrow</span>
+                                Run Prediction
+                            </button>
+                        </section>
+                    </div>
+                </div>
+
+                <!-- Right Column: Results -->
+                <div class="bento-col-6">
+                    <div class="bento-inner" style="height: 100%;">
+                        <section class="section" style="height: 100%; display: flex; flex-direction: column;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                                <h2 class="section__title" style="margin-bottom: 0;">
+                                    <span class="material-symbols-outlined">terminal</span>
+                                    API Response
+                                </h2>
+                                <span id="apiStatus" class="card__badge hidden"></span>
+                            </div>
+                            
+                            <div id="jsonOutput" class="json-output" style="display: none;"></div>
+                            
+                            <div id="outputPlaceholder" style="display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; color: var(--on-surface-variant); min-height: 250px;">
+                                <span class="material-symbols-outlined" style="font-size: 48px; opacity: 0.2; margin-bottom: 16px;">api</span>
+                                <div>Run a prediction to see the API response</div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </div>
+            </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ── Scripts ──────────────────────────────────────────── -->
+    <script>
+        const API_BASE = '/api';
+        
+        // Elements
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const predictBtn = document.getElementById('predictBtn');
+        const jsonInput = document.getElementById('jsonInput');
+        const jsonOutput = document.getElementById('jsonOutput');
+        const apiStatus = document.getElementById('apiStatus');
+        const outputPlaceholder = document.getElementById('outputPlaceholder');
+
+        // Drag & Drop Handling
+        dropZone.addEventListener('click', () => fileInput.click());
+        
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = 'var(--primary)';
+            dropZone.style.background = 'rgba(255, 255, 255, 0.05)';
+        });
+        
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.style.borderColor = 'var(--outline)';
+            dropZone.style.background = 'transparent';
+        });
+        
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = 'var(--outline)';
+            dropZone.style.background = 'transparent';
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                handleFileUpload(fileInput.files[0]);
+            }
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) handleFileUpload(e.target.files[0]);
+        });
+
+        // Model Upload
+        async function handleFileUpload(file) {
+            if (!file.name.endsWith('.pkl')) {
+                showAlert('Please upload a .pkl model file', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            // UI Feedback
+            const originalText = dropZone.innerHTML;
+            dropZone.innerHTML = '<div style="display:flex; flex-direction:column; align-items:center; gap:8px;"><span class="spinner spinner--on-surface"></span><span>Loading Model...</span></div>';
+
+            try {
+                const response = await fetch(`${API_BASE}/upload_model`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const err = await response.json();
+                    throw new Error(err.detail || 'Upload failed');
+                }
+
+                document.getElementById('modelInfo').classList.remove('hidden');
+                document.getElementById('modelFileName').textContent = file.name;
+                predictBtn.disabled = false;
+                showAlert('Model loaded successfully', 'success');
+            } catch (error) {
+                showAlert(error.message, 'error');
+            } finally {
+                dropZone.innerHTML = originalText;
+            }
+        }
+
+        // Run Prediction
+        predictBtn.addEventListener('click', async () => {
+            const rawJson = jsonInput.value.trim();
+            if (!rawJson) {
+                showAlert('Please enter input JSON parameters', 'error');
+                return;
+            }
+
+            let inputData;
+            try {
+                inputData = JSON.parse(rawJson);
+            } catch (e) {
+                showAlert('Invalid JSON format', 'error');
+                return;
+            }
+
+            predictBtn.innerHTML = '<span class="spinner spinner--on-primary"></span> Running...';
+            predictBtn.disabled = true;
+
+            try {
+                const response = await fetch(`${API_BASE}/predict`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ data: inputData })
+                });
+
+                const statusText = `${response.status} ${response.statusText}`;
+                
+                apiStatus.textContent = statusText;
+                apiStatus.className = 'status-badge ' + (response.ok ? 'success' : 'error');
+                apiStatus.classList.remove('hidden');
+
+                const result = await response.json();
+                
+                jsonOutput.textContent = JSON.stringify(result, null, 2);
+                jsonOutput.style.display = 'block';
+                outputPlaceholder.style.display = 'none';
+
+            } catch (error) {
+                apiStatus.textContent = 'Network Error';
+                apiStatus.className = 'status-badge error';
+                apiStatus.classList.remove('hidden');
+                
+                jsonOutput.textContent = error.message;
+                jsonOutput.style.display = 'block';
+                outputPlaceholder.style.display = 'none';
+            } finally {
+                predictBtn.innerHTML = '<span class="material-symbols-outlined">play_arrow</span> Run Prediction';
+                predictBtn.disabled = false;
+            }
+        });
+
+        // Helper
+        function showAlert(message, type) {
+            const alert = document.getElementById('alertBox');
+            alert.className = `alert alert--${type}`;
+            alert.textContent = (type === 'success' ? '✓ ' : type === 'error' ? '✗ ' : type === 'warning' ? '⚠ ' : '') + message;
+            alert.classList.remove('hidden');
+
+            if (type === 'success' || type === 'info') {
+                setTimeout(() => alert.classList.add('hidden'), 4000);
+            }
+        }
+    </script>
+</body>
+</html>

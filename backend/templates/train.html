@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ForgeML — Model Configuration</title>
+    <link rel="stylesheet" href="/static/style.css?v=2">
+</head>
+<body>
+    <div class="app-shell">
+        <!-- ── Side Navigation ──────────────────────────────────── -->
+        <nav class="side-nav">
+            <div class="side-nav__header">
+                <div class="side-nav__project-name">ForgeML</div>
+                <div class="side-nav__version">v1.0.0</div>
+            </div>
+
+            <div class="side-nav__cta">
+                <a href="/" class="side-nav__cta-btn">
+                    <span class="material-symbols-outlined">add</span>
+                    New Upload
+                </a>
+            </div>
+
+            <ul class="side-nav__links">
+                <li>
+                    <a href="/" class="side-nav__link">
+                        <span class="material-symbols-outlined">dashboard</span>
+                        Dashboard
+                    </a>
+                </li>
+                <li>
+                    <a href="/" class="side-nav__link">
+                        <span class="material-symbols-outlined">database</span>
+                        Datasets
+                    </a>
+                </li>
+                <li>
+                    <a href="/train" class="side-nav__link active">
+                        <span class="material-symbols-outlined">science</span>
+                        Train Model
+                    </a>
+                </li>
+                <li>
+                    <a href="/predict_ui" class="side-nav__link">
+                        <span class="material-symbols-outlined">online_prediction</span>
+                        Predict
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="side-nav__link">
+                        <span class="material-symbols-outlined">account_tree</span>
+                        Pipeline
+                    </a>
+                </li>
+            </ul>
+
+            <ul class="side-nav__footer">
+                <li>
+                    <a href="/docs" class="side-nav__link">
+                        <span class="material-symbols-outlined">description</span>
+                        API Docs
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="side-nav__link">
+                        <span class="material-symbols-outlined">help</span>
+                        Support
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- ── Main Content ─────────────────────────────────────── -->
+        <main class="main-content">
+            <!-- Top Navigation Bar -->
+            <header class="top-nav">
+                <div class="top-nav__left">
+                    <div class="top-nav__brand">ForgeML</div>
+                    <nav class="top-nav__links">
+                        <a href="/" class="top-nav__link">Upload</a>
+                        <a href="/train" class="top-nav__link active">Train</a>
+                        <a href="/docs" class="top-nav__link">Models</a>
+                    </nav>
+                </div>
+                <div class="top-nav__actions">
+                    <button class="top-nav__icon-btn"><span class="material-symbols-outlined">terminal</span></button>
+                    <button class="top-nav__icon-btn"><span class="material-symbols-outlined">settings</span></button>
+                    <button class="top-nav__icon-btn"><span class="material-symbols-outlined">account_circle</span></button>
+                </div>
+            </header>
+
+            <!-- Scrollable Content -->
+            <div class="page-body-scroll">
+                <div class="page-inner">
+                    <!-- Page Header -->
+                    <header class="page-header">
+                        <div>
+                            <h1 class="page-header__title">Model Configuration</h1>
+                            <p class="page-header__subtitle">Configure training parameters and preprocessing pipeline for current dataset.</p>
+                        </div>
+                        <div class="page-header__meta" id="datasetMeta" style="display:none;">
+                            <span class="page-header__meta-dot"></span>
+                            Dataset: <span class="text-primary" id="datasetName">—</span>
+                        </div>
+                    </header>
+
+                    <!-- Alert -->
+                    <div id="alertBox" class="alert hidden"></div>
+
+                    <!-- ── Training Form ────────────────────────────── -->
+                    <form id="trainingForm">
+                        <div class="bento-grid">
+                            <!-- ─── Left Column: Target + Features ──── -->
+                            <div class="bento-col-4">
+                                <div class="bento-inner">
+                                    <!-- Target Selection -->
+                                    <section class="section">
+                                        <h2 class="section__title">
+                                            <span class="material-symbols-outlined">target</span>
+                                            Target Selection
+                                        </h2>
+                                        <p class="section__desc">Select the dependent variable to predict.</p>
+                                        <label class="form-label">Target Column</label>
+                                        <div class="form-select-wrapper">
+                                            <select class="form-select" id="targetColumn" required>
+                                                <option value="" disabled selected>Select target...</option>
+                                            </select>
+                                            <span class="material-symbols-outlined">arrow_drop_down</span>
+                                        </div>
+                                    </section>
+
+                                    <!-- Feature Selection -->
+                                    <section class="section" style="flex:1; display:flex; flex-direction:column;">
+                                        <div class="flex-between mb-sm">
+                                            <h2 class="section__title" style="margin-bottom:0;">
+                                                <span class="material-symbols-outlined">view_column</span>
+                                                Features
+                                            </h2>
+                                            <span class="card__badge" id="featureBadge">0 / 0 Selected</span>
+                                        </div>
+                                        <p class="section__desc">Select independent variables for training.</p>
+
+                                        <!-- Search Filter -->
+                                        <div class="search-input-wrapper mb-sm">
+                                            <span class="material-symbols-outlined">search</span>
+                                            <input type="text" class="search-input" id="featureSearch" placeholder="Filter columns...">
+                                        </div>
+
+                                        <!-- Feature Checkbox List -->
+                                        <div class="feature-list" id="featureList">
+                                            <p class="text-muted label-sm" style="padding:16px; text-align:center;">Upload a dataset first</p>
+                                        </div>
+                                    </section>
+                                </div>
+                            </div>
+
+                            <!-- ─── Right Column: Preprocessing + Model ── -->
+                            <div class="bento-col-8">
+                                <div class="bento-inner">
+                                    <!-- Pipeline Preprocessing -->
+                                    <section class="section">
+                                        <h2 class="section__title">
+                                            <span class="material-symbols-outlined">mop</span>
+                                            Pipeline Preprocessing
+                                        </h2>
+                                        <p class="section__desc" style="padding-bottom: var(--element-gap); border-bottom: 1px solid var(--outline);">Define automated data cleaning and scaling steps applied before training.</p>
+
+                                        <div class="preprocess-grid" style="margin-top: var(--gutter);">
+                                            <!-- Missing Values -->
+                                            <div class="radio-group">
+                                                <div class="radio-group__title">Missing Values</div>
+                                                <div class="radio-group__items">
+                                                    <label class="radio-group__item">
+                                                        <input type="radio" name="missing_vals" value="drop" checked>
+                                                        <span class="radio-group__item-label">Drop rows</span>
+                                                    </label>
+                                                    <label class="radio-group__item">
+                                                        <input type="radio" name="missing_vals" value="impute_mean">
+                                                        <span class="radio-group__item-label">Impute (Mean/Mode)</span>
+                                                    </label>
+                                                    <label class="radio-group__item">
+                                                        <input type="radio" name="missing_vals" value="ignore">
+                                                        <span class="radio-group__item-label radio-group__item-label--muted">Ignore (Algorithms handle)</span>
+                                                    </label>
+                                                </div>
+                                            </div>
+
+                                            <!-- Transformations -->
+                                            <div class="toggle-group">
+                                                <div class="toggle-group__title">Transformations</div>
+
+                                                <label class="toggle-item">
+                                                    <span class="toggle-item__label">Standard Scale (Numeric)</span>
+                                                    <div class="toggle-switch">
+                                                        <input type="checkbox" id="toggleStandardScale" checked>
+                                                        <span class="toggle-switch__slider"></span>
+                                                    </div>
+                                                </label>
+
+                                                <label class="toggle-item">
+                                                    <span class="toggle-item__label">One-Hot Encode (Categorical)</span>
+                                                    <div class="toggle-switch">
+                                                        <input type="checkbox" id="toggleOneHot" checked>
+                                                        <span class="toggle-switch__slider"></span>
+                                                    </div>
+                                                </label>
+
+                                                <label class="toggle-item">
+                                                    <span class="toggle-item__label toggle-item__label--muted">Handle Class Imbalance (SMOTE)</span>
+                                                    <div class="toggle-switch">
+                                                        <input type="checkbox" id="toggleSMOTE">
+                                                        <span class="toggle-switch__slider"></span>
+                                                    </div>
+                                                </label>
+                                            </div>
+                                            
+                                            <!-- Train / Test Split -->
+                                            <div class="split-group" style="margin-top: 16px;">
+                                                <div class="toggle-group__title">Data Split</div>
+                                                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                                    <label class="form-label">Test Set Size</label>
+                                                    <span id="testSizeDisplay" style="color: var(--text-muted); font-size: 13px;">0.2 (20%)</span>
+                                                </div>
+                                                <input type="range" id="testSizeSlider" min="0.1" max="0.9" step="0.05" value="0.2" style="width: 100%;" oninput="document.getElementById('testSizeDisplay').textContent = this.value + ' (' + Math.round(this.value * 100) + '%)'">
+                                            </div>
+                                        </div>
+                                    </section>
+
+                                    <!-- Algorithm Selection -->
+                                    <div class="card">
+                                        <div class="algo-header">
+                                            <h2 class="section__title" style="margin-bottom:0;">
+                                                <span class="material-symbols-outlined">psychology</span>
+                                                Algorithm Selection
+                                            </h2>
+                                            <div class="algo-header__tabs" id="modelTabs">
+                                                <button type="button" class="btn-tab active" data-model="random_forest">Random Forest</button>
+                                                <button type="button" class="btn-tab" data-model="knn">KNN</button>
+                                                <button type="button" class="btn-tab" data-model="logistic_regression">Log Reg</button>
+                                                <button type="button" class="btn-tab" data-model="linear_regression">Linear Reg</button>
+                                                <button type="button" class="btn-tab" data-model="naive_bayes">Naive Bayes</button>
+                                            </div>
+                                        </div>
+
+                                        <!-- Hyperparameters -->
+                                        <div class="params-grid" id="paramsGrid">
+                                            <!-- Populated dynamically -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Model Name (Optional) -->
+                        <div style="margin-top: var(--gutter);">
+                            <div class="section" style="max-width: 400px;">
+                                <label class="form-label">Model Name (Optional)</label>
+                                <input type="text" class="form-input" id="modelName" placeholder="e.g., churn_predictor_v1">
+                            </div>
+                        </div>
+
+                        <!-- CTA Footer -->
+                        <div class="cta-footer">
+                            <button type="submit" class="btn btn-primary btn-lg icon-spin-hover" id="trainBtn">
+                                <span class="material-symbols-outlined">model_training</span>
+                                Initialize Training Run
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- ── Results Section ───────────────────────────── -->
+                    <div id="resultsSection" class="results-section hidden">
+                        <div class="section">
+                            <h2 class="section__title">
+                                <span class="material-symbols-outlined">analytics</span>
+                                Training Results
+                            </h2>
+
+                            <div class="results-grid">
+                                <div class="result-stat">
+                                    <div class="result-stat__value" id="taskTypeDisplay">—</div>
+                                    <div class="result-stat__label">Task Type</div>
+                                </div>
+                                <div class="result-stat">
+                                    <div class="result-stat__value" id="modelTypeDisplay">—</div>
+                                    <div class="result-stat__label">Model Type</div>
+                                </div>
+                            </div>
+
+                            <h3 class="label-md uppercase text-muted mb-sm">Performance Metrics</h3>
+                            <div class="metrics-grid" id="metricsDisplay"></div>
+
+                            <div id="modelNameInfo" class="alert alert--info hidden" style="margin-bottom: var(--gutter);">
+                                <strong>📁 Model Name:</strong> <span id="downloadedModelName"></span>
+                            </div>
+
+                            <div style="display: flex; gap: var(--element-gap);">
+                                <button id="exportBtn" class="btn btn-primary btn-lg" type="button">
+                                    <span class="spinner spinner--on-primary hidden" id="exportSpinner"></span>
+                                    <span class="material-symbols-outlined">download</span>
+                                    Download Model (.pkl)
+                                </button>
+                                <a href="/" class="btn btn-outline btn-lg">Train Another Model</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_BASE = '/api';
+        let selectedModel = 'random_forest';
+        let columnStats = {};
+
+        // ── Hyperparameter Definitions ───────────────────────────
+        const HYPERPARAMS = {
+            random_forest: [
+                { name: 'n_estimators', label: 'n_estimators', type: 'range', value: 100, min: 10, max: 500, step: 10 },
+                { name: 'max_depth', label: 'max_depth', type: 'number', value: 10, min: 1, max: 50 }
+            ],
+            knn: [
+                { name: 'n_neighbors', label: 'n_neighbors', type: 'range', value: 5, min: 1, max: 20, step: 1 }
+            ],
+            logistic_regression: [],
+            linear_regression: [],
+            naive_bayes: [],
+            ridge_regression: [
+                { name: 'alpha', label: 'alpha', type: 'number', value: 1.0, min: 0.01, max: 100, step: 0.01 }
+            ],
+            lasso_regression: [
+                { name: 'alpha', label: 'alpha', type: 'number', value: 1.0, min: 0.01, max: 100, step: 0.01 }
+            ]
+        };
+
+        // ── Model Tab Selection ──────────────────────────────────
+        document.getElementById('modelTabs').addEventListener('click', (e) => {
+            const tab = e.target.closest('[data-model]');
+            if (!tab) return;
+
+            document.querySelectorAll('#modelTabs .btn-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+
+            selectedModel = tab.dataset.model;
+            renderHyperparams(selectedModel);
+        });
+
+        function renderHyperparams(model) {
+            const grid = document.getElementById('paramsGrid');
+            const params = HYPERPARAMS[model] || [];
+
+            if (params.length === 0) {
+                grid.innerHTML = '<p class="text-muted label-sm" style="padding: 8px;">No hyperparameters to configure for this model.</p>';
+                return;
+            }
+
+            grid.innerHTML = '';
+            params.forEach(p => {
+                if (p.type === 'range') {
+                    grid.innerHTML += `
+                        <div class="param-control">
+                            <div class="param-control__header">
+                                <label class="param-control__label">${p.label}</label>
+                                <span class="param-control__value" id="val_${p.name}">${p.value}</span>
+                            </div>
+                            <input type="range" id="hp_${p.name}" value="${p.value}" min="${p.min}" max="${p.max}" step="${p.step || 1}"
+                                oninput="document.getElementById('val_${p.name}').textContent = this.value">
+                        </div>
+                    `;
+                } else {
+                    grid.innerHTML += `
+                        <div class="param-control">
+                            <label class="param-control__label">${p.label}</label>
+                            <input type="number" class="form-input" id="hp_${p.name}" value="${p.value}" min="${p.min}" max="${p.max}" step="${p.step || 1}">
+                        </div>
+                    `;
+                }
+            });
+        }
+
+        // ── Load Dataset Profile ─────────────────────────────────
+        async function loadDatasetProfile() {
+            try {
+                const response = await fetch(`${API_BASE}/profile`);
+                if (!response.ok) {
+                    showAlert('Please upload a dataset first! Go to Dashboard to upload.', 'warning');
+                    return;
+                }
+
+                const profile = await response.json();
+                columnStats = profile.column_statistics || {};
+
+                document.getElementById('datasetMeta').style.display = 'flex';
+                document.getElementById('datasetName').textContent = `${profile.column_names?.length || 0} columns · ${profile.rows || '?'} rows`;
+
+                // Populate target dropdown
+                const targetSelect = document.getElementById('targetColumn');
+                targetSelect.innerHTML = '<option value="" disabled selected>Select target...</option>';
+
+                (profile.column_names || []).forEach(col => {
+                    const option = document.createElement('option');
+                    option.value = col;
+                    option.textContent = col;
+                    targetSelect.appendChild(option);
+                });
+
+                // Populate feature list
+                const featureList = document.getElementById('featureList');
+                featureList.innerHTML = '';
+
+                (profile.column_names || []).forEach(col => {
+                    const stat = columnStats[col] || {};
+                    const type = stat.type || 'unknown';
+
+                    const label = document.createElement('label');
+                    label.className = 'feature-list__item';
+                    label.innerHTML = `
+                        <input type="checkbox" class="feature-checkbox" value="${col}" checked>
+                        <span class="feature-list__item-name">${col}</span>
+                        <span class="feature-list__item-type">${type}</span>
+                    `;
+                    featureList.appendChild(label);
+                });
+
+                updateFeatureBadge();
+
+            } catch (error) {
+                console.error('Error loading profile:', error);
+                showAlert('Error loading dataset. Please upload a dataset first.', 'error');
+            }
+        }
+
+        // ── Feature badge + search ───────────────────────────────
+        function updateFeatureBadge() {
+            const total = document.querySelectorAll('.feature-checkbox').length;
+            const checked = document.querySelectorAll('.feature-checkbox:checked').length;
+            document.getElementById('featureBadge').textContent = `${checked} / ${total} Selected`;
+        }
+
+        document.getElementById('featureList').addEventListener('change', updateFeatureBadge);
+
+        document.getElementById('featureSearch').addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            document.querySelectorAll('.feature-list__item').forEach(item => {
+                const name = item.querySelector('.feature-list__item-name').textContent.toLowerCase();
+                item.style.display = name.includes(query) ? 'flex' : 'none';
+            });
+        });
+
+        // ── Form Submission ──────────────────────────────────────
+        document.getElementById('trainingForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const target = document.getElementById('targetColumn').value;
+            const features = Array.from(document.querySelectorAll('.feature-checkbox:checked')).map(el => el.value);
+            const modelName = document.getElementById('modelName').value.trim();
+
+            if (!target) {
+                showAlert('Please select a target column.', 'error');
+                return;
+            }
+
+            if (features.length === 0) {
+                showAlert('Please select at least one feature.', 'error');
+                return;
+            }
+
+            if (features.includes(target)) {
+                // Auto-remove target from features
+                const idx = features.indexOf(target);
+                features.splice(idx, 1);
+                if (features.length === 0) {
+                    showAlert('No features remain after removing target column.', 'error');
+                    return;
+                }
+            }
+
+            // Get missing value strategy
+            const missingVal = document.querySelector('input[name="missing_vals"]:checked').value;
+
+            // Build cleaning operations
+            const cleaningOps = {
+                drop_missing_values: missingVal === 'drop',
+                fill_numeric_mean: missingVal === 'impute_mean',
+                fill_numeric_median: false,
+                one_hot_encode: document.getElementById('toggleOneHot').checked,
+                standard_scale: document.getElementById('toggleStandardScale').checked
+            };
+
+            // Gather hyperparameters
+            const hyperparams = {};
+            document.querySelectorAll('[id^="hp_"]').forEach(input => {
+                const paramName = input.id.replace('hp_', '');
+                hyperparams[paramName] = parseFloat(input.value);
+            });
+            
+            const testSize = parseFloat(document.getElementById('testSizeSlider').value) || 0.2;
+
+            const trainingData = {
+                target_column: target,
+                feature_columns: features,
+                model_type: selectedModel,
+                model_name: modelName || null,
+                cleaning_operations: cleaningOps,
+                hyperparameters: hyperparams,
+                test_size: testSize
+            };
+
+            // Update button state
+            const trainBtn = document.getElementById('trainBtn');
+            const originalHTML = trainBtn.innerHTML;
+            trainBtn.innerHTML = '<span class="spinner spinner--on-primary"></span> Training...';
+            trainBtn.disabled = true;
+
+            try {
+                const response = await fetch(`${API_BASE}/train`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(trainingData)
+                });
+
+                if (!response.ok) {
+                    const err = await response.json();
+                    throw new Error(err.detail || 'Training failed');
+                }
+
+                const result = await response.json();
+
+                // Display results
+                displayResults(result);
+                document.getElementById('trainingForm').style.display = 'none';
+                document.getElementById('resultsSection').classList.remove('hidden');
+
+                // Show model name if provided
+                if (modelName) {
+                    document.getElementById('downloadedModelName').textContent = modelName;
+                    document.getElementById('modelNameInfo').classList.remove('hidden');
+                }
+
+                showAlert('Model trained successfully!', 'success');
+
+            } catch (error) {
+                showAlert('Training Error: ' + error.message, 'error');
+            } finally {
+                trainBtn.innerHTML = originalHTML;
+                trainBtn.disabled = false;
+            }
+        });
+
+        // ── Display Results ──────────────────────────────────────
+        function displayResults(result) {
+            document.getElementById('taskTypeDisplay').textContent = (result.task_type || '—').toUpperCase();
+            document.getElementById('modelTypeDisplay').textContent = (result.model_type || '—').replace(/_/g, ' ').toUpperCase();
+
+            const metricsDiv = document.getElementById('metricsDisplay');
+            metricsDiv.innerHTML = '';
+
+            for (const [key, value] of Object.entries(result.metrics || {})) {
+                if (key === 'confusion_matrix') continue;
+
+                const formattedKey = key.replace(/_/g, ' ').toUpperCase();
+                const formattedValue = typeof value === 'number' ? value.toFixed(4) : value;
+
+                metricsDiv.innerHTML += `
+                    <div class="metric-badge">
+                        ${formattedKey}: <strong>${formattedValue}</strong>
+                    </div>
+                `;
+            }
+        }
+
+        // ── Export / Download ─────────────────────────────────────
+        document.getElementById('exportBtn').addEventListener('click', async () => {
+            const spinner = document.getElementById('exportSpinner');
+            spinner.classList.remove('hidden');
+
+            try {
+                const response = await fetch(`${API_BASE}/export`, { method: 'POST' });
+                if (!response.ok) throw new Error('Export failed');
+
+                const result = await response.json();
+
+                // Trigger download
+                const downloadResponse = await fetch(`${API_BASE}/download/${result.filename}`);
+                const blob = await downloadResponse.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = result.filename;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+
+                showAlert('Model downloaded successfully!', 'success');
+
+            } catch (error) {
+                showAlert('Download Error: ' + error.message, 'error');
+            } finally {
+                spinner.classList.add('hidden');
+            }
+        });
+
+        // ── Helpers ──────────────────────────────────────────────
+        function showAlert(message, type) {
+            const alert = document.getElementById('alertBox');
+            alert.className = `alert alert--${type}`;
+            alert.textContent = (type === 'success' ? '✓ ' : type === 'error' ? '✗ ' : type === 'warning' ? '⚠ ' : '') + message;
+            alert.classList.remove('hidden');
+
+            if (type === 'success' || type === 'info') {
+                setTimeout(() => alert.classList.add('hidden'), 4000);
+            }
+        }
+
+        // ── Init ─────────────────────────────────────────────────
+        renderHyperparams(selectedModel);
+        loadDatasetProfile();
+    </script>
+</body>
+</html>
