@@ -1,15 +1,15 @@
 import pandas as pd
 from pathlib import Path
-from typing import Tuple, Dict, Any
+from typing import Tuple, Dict, Any, Union, IO
 
 class DatasetLoader:
     """Handles CSV dataset loading and initial validation."""
     
     @staticmethod
-    def load_csv(file_path: str) -> pd.DataFrame:
+    def load_csv(file_obj: Union[str, IO[bytes]]) -> pd.DataFrame:
         """Load CSV file and return DataFrame."""
         try:
-            df = pd.read_csv(file_path)
+            df = pd.read_csv(file_obj)
             if df.empty:
                 raise ValueError("Dataset is empty")
             return df

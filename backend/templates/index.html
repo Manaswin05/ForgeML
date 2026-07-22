@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ForgeML — Dataset Dashboard</title>
-    <link rel="stylesheet" href="/static/style.css?v=2">
+    <link rel="stylesheet" href="/static/style.css?v=5">
 </head>
 <body>
     <div class="app-shell">
@@ -107,12 +107,12 @@
                 </section>
 
                 <!-- Upload + Column Info Grid -->
-                <div class="content-grid content-grid--3col" id="uploadSection">
+                <div class="content-grid centered-upload" id="uploadSection">
                     <!-- Drop Zone -->
                     <div class="drop-zone" id="dropZone">
                         <span class="material-symbols-outlined drop-zone__icon">cloud_upload</span>
-                        <h3 class="drop-zone__title">Upload Data</h3>
-                        <p class="drop-zone__text">Drag & drop CSV files here, or click to browse.</p>
+                        <h3 class="drop-zone__title">Drag & drop CSV files here</h3>
+                        <p class="drop-zone__text">or click to browse</p>
                         <input type="file" id="fileInput" class="drop-zone__input" accept=".csv,.xlsx">
                     </div>
 
@@ -214,6 +214,10 @@
                 document.getElementById('statCols').textContent = data.info.columns;
                 document.getElementById('statMemory').textContent = data.info.memory_usage_mb.toFixed(1);
                 document.getElementById('statsGrid').classList.remove('hidden');
+
+                // Switch layout from centered to grid
+                document.getElementById('uploadSection').classList.remove('centered-upload');
+                document.getElementById('uploadSection').classList.add('content-grid--3col');
 
                 // Show preview table
                 displayPreview(data.preview, data.info.column_names);
@@ -371,6 +375,10 @@
                         document.getElementById('statMemory').textContent = profile.memory_usage_mb?.toFixed(1) || '—';
                         document.getElementById('statDuplicates').textContent = profile.duplicates ?? 0;
                         document.getElementById('statsGrid').classList.remove('hidden');
+
+                        // Switch layout from centered to grid
+                        document.getElementById('uploadSection').classList.remove('centered-upload');
+                        document.getElementById('uploadSection').classList.add('content-grid--3col');
 
                         // Column info
                         await loadProfile();

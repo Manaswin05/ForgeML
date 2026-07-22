@@ -73,6 +73,21 @@ def test_export():
     print(f"✓ Model exported: {data['filename']}")
     return data
 
+def test_analysis():
+    """Test dataset analysis"""
+    analysis_request = {
+        "target_column": "Promoted",
+        "feature_columns": ["Age", "Salary"]
+    }
+    response = requests.post(f"{BASE_URL}/api/analysis", json=analysis_request)
+    assert response.status_code == 200, f"Analysis failed: {response.status_code} - {response.text}"
+    data = response.json()
+    assert data["status"] == "success"
+    assert "pairplot" in data
+    assert "model_comparisons" in data
+    print("✓ Analysis generated successfully")
+    return data
+
 if __name__ == "__main__":
     print("Testing ForgeML API...\n")
     
@@ -81,6 +96,7 @@ if __name__ == "__main__":
         test_api_docs()
         test_upload()
         test_profile()
+        test_analysis()
         test_training()
         test_export()
         

@@ -45,6 +45,9 @@ class DatasetAnalyzer:
         # Drop rows with NaNs in these columns for seaborn
         plot_df = df[plot_cols].dropna()
         
+        if plot_df.empty:
+            return None
+        
         # Subsample if too large
         if len(plot_df) > 1000:
             plot_df = plot_df.sample(1000, random_state=42)

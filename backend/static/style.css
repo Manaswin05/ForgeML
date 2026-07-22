@@ -642,9 +642,51 @@ input, select, textarea {
     justify-content: center;
     padding: 32px;
     min-height: 240px;
-    border-radius: var(--radius);
-    transition: background-color 0.2s;
+    border-radius: 12px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
+}
+
+.centered-upload {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin: 48px 0;
+}
+
+.centered-upload .drop-zone {
+    width: 100%;
+    max-width: 800px;
+    min-height: 280px;
+    border: 2px dashed #4b4b4b;
+}
+
+.centered-upload .drop-zone:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+    border-color: var(--primary);
+}
+
+.centered-upload .drop-zone__icon {
+    font-size: 72px;
+    margin-bottom: 24px;
+    color: #8b949e;
+    font-variation-settings: 'FILL' 1;
+}
+
+.centered-upload .drop-zone__title {
+    font-family: 'Geist', sans-serif;
+    font-size: 22px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: var(--primary);
+}
+
+.centered-upload .drop-zone__text {
+    font-size: 16px;
+    color: #8b949e;
+    opacity: 1;
 }
 
 .drop-zone:hover {

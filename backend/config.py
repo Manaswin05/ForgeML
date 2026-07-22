@@ -3,12 +3,12 @@ from pathlib import Path
 
 # Base directories
 BASE_DIR = Path(__file__).parent
-UPLOADS_DIR = BASE_DIR / "uploads"
+DATASETS_DIR = BASE_DIR / "datasets"
 MODELS_DIR = BASE_DIR / "models"
 REPORTS_DIR = BASE_DIR / "reports"
 
 # Create directories if they don't exist
-UPLOADS_DIR.mkdir(exist_ok=True)
+DATASETS_DIR.mkdir(exist_ok=True)
 MODELS_DIR.mkdir(exist_ok=True)
 REPORTS_DIR.mkdir(exist_ok=True)
 

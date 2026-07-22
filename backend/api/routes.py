@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Dict, Any
 import joblib
 import logging
+import io
 
 from core.loader import DatasetLoader
 from core.profiler import DatasetProfiler
@@ -18,7 +19,7 @@ from api.schemas import (
     DatasetInfo, DatasetProfile, TrainingRequest, TrainingResponse,
     PredictionRequest, PredictionResponse, ModelExportResponse, ErrorResponse, AnalysisRequest
 )
-from config import UPLOADS_DIR, MODELS_DIR
+from config import DATASETS_DIR, MODELS_DIR
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -68,14 +69,12 @@ async def upload_dataset(file: UploadFile = File(...)):
         if not file.filename.endswith(('.csv', '.xlsx')):
             raise HTTPException(status_code=400, detail="Only CSV and Excel files are supported")
         
-        # Save uploaded file
-        file_path = UPLOADS_DIR / file.filename
-        with open(file_path, "wb") as f:
-            content = await file.read()
-            f.write(content)
+        # Read into memory
+        content = await file.read()
+        file_obj = io.BytesIO(content)
         
         # Load dataset
-        df = DatasetLoader.load_csv(str(file_path))
+        df = DatasetLoader.load_csv(file_obj)
         current_session["df"] = df
         
         # Get info
@@ -237,13 +236,12 @@ async def upload_model(file: UploadFile = File(...)):
         if not file.filename.endswith('.pkl'):
             raise HTTPException(status_code=400, detail="Only .pkl files are supported")
         
-        file_path = MODELS_DIR / file.filename
-        with open(file_path, "wb") as f:
-            content = await file.read()
-            f.write(content)
+        # Read into memory
+        content = await file.read()
+        file_obj = io.BytesIO(content)
         
         # Load model
-        model = joblib.load(file_path)
+        model = joblib.load(file_obj)
         
         current_session["model"] = model
         current_session["model_name"] = file.filename
@@ -344,6 +342,12 @@ def generate_analysis(request: AnalysisRequest):
         df = current_session["df"].copy()
         
         # Validate inputs
+        if not request.feature_columns:
+            raise ValueError("Feature columns list cannot be empty")
+            
+        if request.target_column in request.feature_columns:
+            raise ValueError("Target column cannot be included in feature columns")
+
         if request.target_column not in df.columns:
             raise ValueError(f"Target column '{request.target_column}' not found")
             

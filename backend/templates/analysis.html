@@ -288,10 +288,10 @@
                 cb.value = col;
                 cb.className = 'feature-cb';
                 cb.checked = true; // default checked
-                cb.id = `cb_${col}`;
+                cb.id = 'cb_' + String(col).replace(/[^A-Za-z0-9_-]/g, '_');
                 
                 const label = document.createElement('label');
-                label.htmlFor = `cb_${col}`;
+                label.htmlFor = cb.id;
                 label.textContent = col;
                 
                 div.appendChild(cb);
@@ -302,7 +302,7 @@
             // Uncheck the last column since it's typically target
             if (columns.length > 0) {
                 targetSelect.value = columns[columns.length - 1];
-                const lastCb = document.getElementById(`cb_${columns[columns.length - 1]}`);
+                const lastCb = document.getElementById('cb_' + String(columns[columns.length - 1]).replace(/[^A-Za-z0-9_-]/g, '_'));
                 if (lastCb) lastCb.checked = false;
             }
         }
@@ -334,6 +334,7 @@
             // Simulate progress percentage
             let progress = 0;
             const progressText = document.getElementById('progressText');
+            if (simulationInterval) clearInterval(simulationInterval);
             simulationInterval = setInterval(() => {
                 if (progress < 95) {
                     progress += Math.floor(Math.random() * 5) + 1;
