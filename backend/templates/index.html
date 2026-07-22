@@ -48,9 +48,9 @@
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="side-nav__link">
-                        <span class="material-symbols-outlined">account_tree</span>
-                        Pipeline
+                    <a href="/analysis" class="side-nav__link">
+                        <span class="material-symbols-outlined">analytics</span>
+                        Analysis
                     </a>
                 </li>
             </ul>
@@ -271,11 +271,11 @@
 
                     if (type === 'numeric') {
                         icon = 'numbers';
-                        const unique = stat.unique_values !== undefined && stat.unique_values !== null ? stat.unique_values : '--';
+                        const unique = stat.unique_values !== undefined && stat.unique_values !== null ? stat.unique_values : '-/-';
                         meta = `Numeric · ${unique} unique`;
                     } else {
                         icon = 'category';
-                        const unique = stat.unique_values !== undefined && stat.unique_values !== null ? stat.unique_values : '--';
+                        const unique = stat.unique_values !== undefined && stat.unique_values !== null ? stat.unique_values : '-/-';
                         let missing = '';
                         if ((stat.missing_count ?? 0) > 0) {
                             missing = ` · ${stat.missing_count} missing`;

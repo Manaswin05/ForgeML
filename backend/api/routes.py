@@ -13,9 +13,10 @@ from core.cleaner import DataCleaner
 from core.trainer import ModelTrainer
 from core.evaluator import ModelEvaluator
 from core.exporter import ModelExporter
+from core.analyzer import DatasetAnalyzer
 from api.schemas import (
     DatasetInfo, DatasetProfile, TrainingRequest, TrainingResponse,
-    PredictionRequest, PredictionResponse, ModelExportResponse, ErrorResponse
+    PredictionRequest, PredictionResponse, ModelExportResponse, ErrorResponse, AnalysisRequest
 )
 from config import UPLOADS_DIR, MODELS_DIR
 
@@ -331,6 +332,42 @@ def get_model_metadata(filename: str):
         
         return metadata
     except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.post("/analysis")
+def generate_analysis(request: AnalysisRequest):
+    """Generate dataset analysis including plots and model comparisons."""
+    try:
+        if current_session["df"] is None:
+            raise ValueError("No dataset loaded")
+            
+        df = current_session["df"].copy()
+        
+        # Validate inputs
+        if request.target_column not in df.columns:
+            raise ValueError(f"Target column '{request.target_column}' not found")
+            
+        for col in request.feature_columns:
+            if col not in df.columns:
+                raise ValueError(f"Feature column '{col}' not found")
+                
+        # Get plots
+        corr_matrix = DatasetAnalyzer.get_correlation_matrix(df, request.feature_columns + [request.target_column])
+        pairplot = DatasetAnalyzer.get_pairplot(df, request.feature_columns, request.target_column)
+        boxplots = DatasetAnalyzer.get_boxplots(df, request.feature_columns, request.target_column)
+        
+        # Get model comparisons
+        model_comparisons = DatasetAnalyzer.compare_models(df, request.feature_columns, request.target_column)
+        
+        return {
+            "status": "success",
+            "correlation_matrix": corr_matrix,
+            "pairplot": pairplot,
+            "boxplots": boxplots,
+            "model_comparisons": model_comparisons
+        }
+    except Exception as e:
+        logger.error(f"Error in analysis: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
 @router.get("/health")
