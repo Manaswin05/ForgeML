@@ -1,0 +1,39 @@
+{
+  "name": "forgeml",
+  "version": "1.0.0",
+  "description": "ML Training Platform with Auto-Generated UI",
+  "scripts": {
+    "dev": "python run.py dev",
+    "start": "python run.py dev",
+    "serve": "python run.py prod",
+    "setup": "python run.py setup",
+    "install": "python run.py setup",
+    "test": "python run.py test",
+    "test-api": "python test_api.py",
+    "test-weather": "python test_weather_api.py",
+    "test-predict": "python test_predict.py",
+    "clean": "python run.py clean",
+    "reset": "python run.py reset",
+    "reset-models": "python run.py reset",
+    "status": "python cli.py status",
+    "models": "python cli.py models",
+    "upload": "python cli.py upload",
+    "browser": "python cli.py browser",
+    "cli": "python cli.py interactive",
+    "interactive": "python cli.py interactive"
+  },
+  "bin": {
+    "forgeml": "./run.py",
+    "forge-cli": "./cli.py"
+  },
+  "keywords": ["machine-learning", "fastapi", "ml-platform", "automl", "no-code"],
+  "author": "ForgeML Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/forgeml.git"
+  },
+  "engines": {
+    "python": ">=3.8"
+  }
+}

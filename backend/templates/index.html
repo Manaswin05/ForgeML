@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ForgeML — Dataset Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css?v=2">
+</head>
+<body>
+    <div class="app-shell">
+        <!-- ── Side Navigation ──────────────────────────────────── -->
+        <nav class="side-nav">
+            <div class="side-nav__header">
+                <div class="side-nav__project-name">ForgeML</div>
+                <div class="side-nav__version">v1.0.0</div>
+            </div>
+
+            <div class="side-nav__cta">
+                <button class="side-nav__cta-btn" onclick="document.getElementById('fileInput').click()">
+                    <span class="material-symbols-outlined">add</span>
+                    New Upload
+                </button>
+            </div>
+
+            <ul class="side-nav__links">
+                <li>
+                    <a href="/" class="side-nav__link active">
+                        <span class="material-symbols-outlined">dashboard</span>
+                        Dashboard
+                    </a>
+                </li>
+                <li>
+                    <a href="/" class="side-nav__link">
+                        <span class="material-symbols-outlined">database</span>
+                        Datasets
+                    </a>
+                </li>
+                <li>
+                    <a href="/train" class="side-nav__link">
+                        <span class="material-symbols-outlined">science</span>
+                        Train Model
+                    </a>
+                </li>
+                <li>
+                    <a href="/predict_ui" class="side-nav__link">
+                        <span class="material-symbols-outlined">online_prediction</span>
+                        Predict
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="side-nav__link">
+                        <span class="material-symbols-outlined">account_tree</span>
+                        Pipeline
+                    </a>
+                </li>
+            </ul>
+
+            <ul class="side-nav__footer">
+                <li>
+                    <a href="/docs" class="side-nav__link">
+                        <span class="material-symbols-outlined">description</span>
+                        API Docs
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="side-nav__link">
+                        <span class="material-symbols-outlined">help</span>
+                        Support
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- ── Main Content ─────────────────────────────────────── -->
+        <main class="main-content">
+            <div class="page-body">
+                <!-- Page Header -->
+                <header class="page-header">
+                    <div>
+                        <h1 class="page-header__title" id="datasetTitle">Upload a Dataset</h1>
+                        <p class="page-header__subtitle" id="datasetSubtitle">Drag & drop or click below to get started</p>
+                    </div>
+                    <div class="page-header__actions" id="headerActions" style="display:none;">
+                        <a href="/docs" class="btn btn-outline">Analyze</a>
+                        <a href="/train" class="btn btn-primary">Train Model</a>
+                    </div>
+                </header>
+
+                <!-- Stats Bento Grid (hidden until upload) -->
+                <section class="stats-grid hidden" id="statsGrid">
+                    <div class="stat-card">
+                        <span class="stat-card__label">Rows</span>
+                        <span class="stat-card__value" id="statRows">—</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-card__label">Columns</span>
+                        <span class="stat-card__value" id="statCols">—</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-card__label">Memory (MB)</span>
+                        <span class="stat-card__value" id="statMemory">—</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-card__label">Duplicates</span>
+                        <span class="stat-card__value" id="statDuplicates">—</span>
+                    </div>
+                </section>
+
+                <!-- Upload + Column Info Grid -->
+                <div class="content-grid content-grid--3col" id="uploadSection">
+                    <!-- Drop Zone -->
+                    <div class="drop-zone" id="dropZone">
+                        <span class="material-symbols-outlined drop-zone__icon">cloud_upload</span>
+                        <h3 class="drop-zone__title">Upload Data</h3>
+                        <p class="drop-zone__text">Drag & drop CSV files here, or click to browse.</p>
+                        <input type="file" id="fileInput" class="drop-zone__input" accept=".csv,.xlsx">
+                    </div>
+
+                    <!-- Column Information -->
+                    <div class="card" id="columnInfoCard" style="display:none;">
+                        <div class="card__header">
+                            <span class="card__header-title">Column Information</span>
+                            <span class="card__badge" id="columnBadge">0 columns</span>
+                        </div>
+                        <div class="card__body" style="max-height: 280px; overflow-y: auto;">
+                            <ul class="column-list" id="columnList"></ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alert -->
+                <div id="alertBox" class="alert hidden"></div>
+
+                <!-- Dataset Preview Table -->
+                <div class="card hidden" id="previewCard">
+                    <div class="card__header">
+                        <span class="card__header-title">Dataset Preview</span>
+                        <div style="display:flex; gap:8px;">
+                            <button class="btn-ghost"><span class="material-symbols-outlined" style="font-size:18px;">filter_list</span></button>
+                            <button class="btn-ghost"><span class="material-symbols-outlined" style="font-size:18px;">more_vert</span></button>
+                        </div>
+                    </div>
+                    <div class="data-table-wrapper">
+                        <table class="data-table" id="previewTable">
+                            <thead><tr id="previewHead"></tr></thead>
+                            <tbody id="previewBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_BASE = '/api';
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+
+        // ── Drag & Drop ──────────────────────────────────────────
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file) uploadFile(file);
+        });
+
+        fileInput.addEventListener('change', () => {
+            const file = fileInput.files[0];
+            if (file) uploadFile(file);
+        });
+
+        // ── Upload File ──────────────────────────────────────────
+        async function uploadFile(file) {
+            showAlert(`Uploading ${file.name}...`, 'info');
+
+            // Show spinner state on drop zone
+            dropZone.querySelector('.drop-zone__title').textContent = 'Uploading...';
+            dropZone.querySelector('.drop-zone__text').textContent = file.name;
+
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const response = await fetch(`${API_BASE}/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const err = await response.json();
+                    throw new Error(err.detail || 'Upload failed');
+                }
+
+                const data = await response.json();
+
+                // Update header
+                document.getElementById('datasetTitle').textContent = file.name;
+                document.getElementById('datasetSubtitle').textContent = `Uploaded just now · ${data.info.rows.toLocaleString()} rows × ${data.info.columns} columns`;
+                document.getElementById('headerActions').style.display = 'flex';
+
+                // Update stats
+                document.getElementById('statRows').textContent = formatNumber(data.info.rows);
+                document.getElementById('statCols').textContent = data.info.columns;
+                document.getElementById('statMemory').textContent = data.info.memory_usage_mb.toFixed(1);
+                document.getElementById('statsGrid').classList.remove('hidden');
+
+                // Show preview table
+                displayPreview(data.preview, data.info.column_names);
+                document.getElementById('previewCard').classList.remove('hidden');
+
+                // Fetch profile for column info + duplicates
+                await loadProfile();
+
+                // Update drop zone to "append" state
+                dropZone.querySelector('.drop-zone__title').textContent = 'Append Data';
+                dropZone.querySelector('.drop-zone__text').textContent = 'Drag & drop CSV files here, or click to browse.';
+
+                showAlert('Dataset loaded successfully!', 'success');
+
+                // Store session marker
+                sessionStorage.setItem('dataset_loaded', 'true');
+
+            } catch (error) {
+                showAlert('Error: ' + error.message, 'error');
+                dropZone.querySelector('.drop-zone__title').textContent = 'Upload Data';
+                dropZone.querySelector('.drop-zone__text').textContent = 'Drag & drop CSV files here, or click to browse.';
+            }
+        }
+
+        // ── Load Profile ─────────────────────────────────────────
+        async function loadProfile() {
+            try {
+                const response = await fetch(`${API_BASE}/profile`);
+                if (!response.ok) return;
+
+                const profile = await response.json();
+
+                // Duplicates stat
+                document.getElementById('statDuplicates').textContent = profile.duplicates ?? 0;
+
+                // Column info card
+                const columnList = document.getElementById('columnList');
+                const columnBadge = document.getElementById('columnBadge');
+                const columnInfoCard = document.getElementById('columnInfoCard');
+
+                columnList.innerHTML = '';
+                const columns = profile.column_names || [];
+                const stats = profile.column_statistics || {};
+
+                columnBadge.textContent = `${columns.length} columns`;
+                columnInfoCard.style.display = 'flex';
+                columnInfoCard.style.flexDirection = 'column';
+                columnInfoCard.style.height = '280px';
+
+                columns.forEach(col => {
+                    const stat = stats[col] || {};
+                    const type = stat.type || 'unknown';
+                    let icon = getTypeIcon(type);
+                    let meta = '';
+
+                    if (type === 'numeric') {
+                        icon = 'numbers';
+                        const unique = stat.unique_values !== undefined && stat.unique_values !== null ? stat.unique_values : '--';
+                        meta = `Numeric · ${unique} unique`;
+                    } else {
+                        icon = 'category';
+                        const unique = stat.unique_values !== undefined && stat.unique_values !== null ? stat.unique_values : '--';
+                        let missing = '';
+                        if ((stat.missing_count ?? 0) > 0) {
+                            missing = ` · ${stat.missing_count} missing`;
+                        }
+                        meta = `Categorical · ${unique} unique${missing}`;
+                    }
+
+                    columnList.innerHTML += `
+                        <li class="column-list__item">
+                            <div class="column-list__item-left">
+                                <span class="material-symbols-outlined column-list__item-icon">${icon}</span>
+                                <span class="column-list__item-name">${col}</span>
+                            </div>
+                            <span class="column-list__item-meta">${meta}</span>
+                        </li>
+                    `;
+                });
+
+            } catch (error) {
+                console.error('Error loading profile:', error);
+            }
+        }
+
+        // ── Display Preview Table ────────────────────────────────
+        function displayPreview(data, columns) {
+            const head = document.getElementById('previewHead');
+            const body = document.getElementById('previewBody');
+
+            head.innerHTML = '';
+            columns.forEach(col => {
+                head.innerHTML += `<th>${col}</th>`;
+            });
+
+            body.innerHTML = '';
+            (data || []).slice(0, 10).forEach((row, i) => {
+                let tr = '<tr>';
+                columns.forEach((col, j) => {
+                    const val = row[col] !== null && row[col] !== undefined ? row[col] : '—';
+                    const cls = j === 0 ? 'col-primary' : '';
+                    tr += `<td class="${cls}">${val}</td>`;
+                });
+                tr += '</tr>';
+                body.innerHTML += tr;
+            });
+        }
+
+        // ── Helpers ──────────────────────────────────────────────
+        function getTypeIcon(type) {
+            switch (type) {
+                case 'numeric': return 'tag';
+                case 'categorical': return 'category';
+                case 'datetime': return 'calendar_today';
+                case 'boolean': return 'warning';
+                default: return 'data_object';
+            }
+        }
+
+        function formatNumber(n) {
+            if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+            if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
+            return n.toString();
+        }
+
+        function showAlert(message, type) {
+            const alert = document.getElementById('alertBox');
+            alert.className = `alert alert--${type}`;
+            alert.textContent = (type === 'success' ? '✓ ' : type === 'error' ? '✗ ' : '') + message;
+            alert.classList.remove('hidden');
+
+            if (type === 'success' || type === 'info') {
+                setTimeout(() => alert.classList.add('hidden'), 4000);
+            }
+        }
+
+        // ── Init: check if dataset already loaded ────────────────
+        (async function init() {
+            try {
+                const status = await fetch(`${API_BASE}/status`);
+                const data = await status.json();
+
+                if (data.has_data) {
+                    // Re-fetch profile to populate the UI
+                    const profileRes = await fetch(`${API_BASE}/profile`);
+                    if (profileRes.ok) {
+                        const profile = await profileRes.json();
+
+                        document.getElementById('datasetTitle').textContent = 'Current Dataset';
+                        document.getElementById('datasetSubtitle').textContent = `${data.data_rows.toLocaleString()} rows loaded`;
+                        document.getElementById('headerActions').style.display = 'flex';
+
+                        document.getElementById('statRows').textContent = formatNumber(data.data_rows);
+                        document.getElementById('statCols').textContent = profile.column_names?.length || '—';
+                        document.getElementById('statMemory').textContent = profile.memory_usage_mb?.toFixed(1) || '—';
+                        document.getElementById('statDuplicates').textContent = profile.duplicates ?? 0;
+                        document.getElementById('statsGrid').classList.remove('hidden');
+
+                        // Column info
+                        await loadProfile();
+
+                        // Preview
+                        if (profile.preview) {
+                            displayPreview(profile.preview, profile.column_names);
+                            document.getElementById('previewCard').classList.remove('hidden');
+                        }
+
+                        // Update drop zone
+                        dropZone.querySelector('.drop-zone__title').textContent = 'Append Data';
+                    }
+                }
+            } catch (e) {
+                // Server might not be ready, that's fine
+            }
+        })();
+    </script>
+</body>
+</html>
