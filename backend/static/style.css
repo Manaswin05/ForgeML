@@ -742,6 +742,10 @@ input, select, textarea {
     margin-bottom: 32px;
 }
 
+.content-grid > * {
+    min-width: 0;
+}
+
 .content-grid--3col {
     grid-template-columns: 1fr 2fr;
 }
