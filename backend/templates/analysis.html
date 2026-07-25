@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ForgeML — Data Analysis</title>
-    <link rel="stylesheet" href="/static/style.css?v=2">
+    <link rel="stylesheet" href="/static/style.css?v=6">
     <style>
         .analysis-section {
             margin-top: 30px;
@@ -30,7 +30,7 @@
             align-items: center;
             justify-content: center;
             padding: 50px;
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(19, 19, 19, 0.9);
             border-radius: 12px;
             margin-top: 20px;
         }
@@ -38,8 +38,8 @@
         .spinner-large {
             width: 50px;
             height: 50px;
-            border: 5px solid rgba(99, 102, 241, 0.2);
-            border-top: 5px solid var(--primary-color);
+            border: 5px solid var(--outline-variant);
+            border-top: 5px solid var(--primary);
             border-radius: 50%;
             animation: spin 1s linear infinite;
             margin-bottom: 20px;
@@ -48,7 +48,7 @@
         .progress-text {
             font-size: 1.2rem;
             font-weight: 600;
-            color: var(--primary-color);
+            color: var(--primary);
         }
         
         table.metrics-table {
@@ -58,14 +58,35 @@
         }
         
         table.metrics-table th, table.metrics-table td {
-            padding: 12px;
+            padding: 12px 16px;
             text-align: left;
-            border-bottom: 1px solid #e2e8f0;
+            border-bottom: 1px solid var(--outline-variant);
         }
         
         table.metrics-table th {
-            background-color: #f8fafc;
-            font-weight: 600;
+            background-color: var(--background);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            line-height: 16px;
+            letter-spacing: 0.05em;
+            font-weight: 500;
+            color: var(--primary);
+            text-transform: uppercase;
+        }
+        
+        table.metrics-table td {
+            font-family: 'Geist', sans-serif;
+            font-size: 14px;
+            color: var(--on-surface);
+        }
+        
+        .chip {
+            background-color: var(--surface-container-high);
+            color: var(--on-surface);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: var(--radius);
         }
     </style>
 </head>
@@ -410,8 +431,8 @@
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td style="font-weight: 600;">${model.model}</td>
-                        <td><span class="metric-badge" style="padding: 4px 8px; font-size: 0.9em; background: #6366f1; color: white; border-radius: 4px;">${model.metric1_value}</span></td>
-                        <td><span class="metric-badge" style="padding: 4px 8px; font-size: 0.9em; background: #ec4899; color: white; border-radius: 4px;">${model.metric2_value}</span></td>
+                        <td><span class="chip">${model.metric1_value}</span></td>
+                        <td><span class="chip">${model.metric2_value}</span></td>
                     `;
                     tbody.appendChild(tr);
                 });

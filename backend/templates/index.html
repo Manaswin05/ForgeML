@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ForgeML — Dataset Dashboard</title>
-    <link rel="stylesheet" href="/static/style.css?v=5">
+    <link rel="stylesheet" href="/static/style.css?v=6">
 </head>
 <body>
     <div class="app-shell">
@@ -81,7 +81,6 @@
                         <p class="page-header__subtitle" id="datasetSubtitle">Drag & drop or click below to get started</p>
                     </div>
                     <div class="page-header__actions" id="headerActions" style="display:none;">
-                        <a href="/docs" class="btn btn-outline">Analyze</a>
                         <a href="/train" class="btn btn-primary">Train Model</a>
                     </div>
                 </header>
@@ -228,7 +227,7 @@
 
                 // Update drop zone to "append" state
                 dropZone.querySelector('.drop-zone__title').textContent = 'Append Data';
-                dropZone.querySelector('.drop-zone__text').textContent = 'Drag & drop CSV files here, or click to browse.';
+                dropZone.querySelector('.drop-zone__text').textContent = 'or click to browse';
 
                 showAlert('Dataset loaded successfully!', 'success');
 
@@ -237,8 +236,8 @@
 
             } catch (error) {
                 showAlert('Error: ' + error.message, 'error');
-                dropZone.querySelector('.drop-zone__title').textContent = 'Upload Data';
-                dropZone.querySelector('.drop-zone__text').textContent = 'Drag & drop CSV files here, or click to browse.';
+                dropZone.querySelector('.drop-zone__title').textContent = 'Drag & drop CSV files here';
+                dropZone.querySelector('.drop-zone__text').textContent = 'or click to browse';
             }
         }
 
