@@ -81,6 +81,7 @@
                         <p class="page-header__subtitle" id="datasetSubtitle">Drag & drop or click below to get started</p>
                     </div>
                     <div class="page-header__actions" id="headerActions" style="display:none;">
+                        <button id="resetSessionBtn" class="btn btn-outline" style="margin-right: 12px; border: 1px solid var(--border-color); background: transparent; color: var(--text-color); padding: 8px 16px; border-radius: 8px; cursor: pointer; transition: all 0.2s;">Reset Session</button>
                         <a href="/train" class="btn btn-primary">Train Model</a>
                     </div>
                 </header>
@@ -178,6 +179,22 @@
             const file = fileInput.files[0];
             if (file) uploadFile(file);
         });
+
+        // ── Reset Session ─────────────────────────────────────────
+        const resetSessionBtn = document.getElementById('resetSessionBtn');
+        if (resetSessionBtn) {
+            resetSessionBtn.addEventListener('click', async () => {
+                if (!confirm('Are you sure you want to reset the session? All loaded data and models will be lost.')) return;
+                try {
+                    const response = await fetch(`${API_BASE}/reset`, { method: 'DELETE' });
+                    if (!response.ok) throw new Error('Reset failed');
+                    sessionStorage.removeItem('dataset_loaded');
+                    window.location.reload();
+                } catch (error) {
+                    showAlert('Error resetting session: ' + error.message, 'error');
+                }
+            });
+        }
 
         // ── Upload File ──────────────────────────────────────────
         async function uploadFile(file) {
