@@ -308,6 +308,4 @@ MIT License
 ## Support
 
 For issues or questions, please refer to the PRD.md file for detailed specifications.
-#   F o r g e M L 
- 
- 
+#
