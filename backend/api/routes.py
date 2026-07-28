@@ -59,6 +59,17 @@ async def get_status():
         logger.error(f"Error getting status: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.delete("/reset")
+def reset_session():
+    """Reset the current session data."""
+    try:
+        for key in current_session:
+            current_session[key] = None
+        return {"status": "success", "message": "Session reset successfully"}
+    except Exception as e:
+        logger.error(f"Error resetting session: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.post("/upload")
 async def upload_dataset(file: UploadFile = File(...)):
     """Upload and load CSV dataset."""
