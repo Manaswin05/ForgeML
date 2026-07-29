@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,21 +10,21 @@
         .analysis-section {
             margin-top: 30px;
         }
-        
+
         .plot-container {
             width: 100%;
             text-align: center;
             margin: 20px 0;
             overflow-x: auto;
         }
-        
+
         .plot-container img {
             max-width: 100%;
             height: auto;
             border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        
+
         .loading-overlay {
             display: none;
             flex-direction: column;
@@ -34,7 +35,7 @@
             border-radius: 12px;
             margin-top: 20px;
         }
-        
+
         .spinner-large {
             width: 50px;
             height: 50px;
@@ -44,25 +45,26 @@
             animation: spin 1s linear infinite;
             margin-bottom: 20px;
         }
-        
+
         .progress-text {
             font-size: 1.2rem;
             font-weight: 600;
             color: var(--primary);
         }
-        
+
         table.metrics-table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
         }
-        
-        table.metrics-table th, table.metrics-table td {
+
+        table.metrics-table th,
+        table.metrics-table td {
             padding: 12px 16px;
             text-align: left;
             border-bottom: 1px solid var(--outline-variant);
         }
-        
+
         table.metrics-table th {
             background-color: var(--background);
             font-family: 'JetBrains Mono', monospace;
@@ -73,13 +75,13 @@
             color: var(--primary);
             text-transform: uppercase;
         }
-        
+
         table.metrics-table td {
             font-family: 'Geist', sans-serif;
             font-size: 14px;
             color: var(--on-surface);
         }
-        
+
         .chip {
             background-color: var(--surface-container-high);
             color: var(--on-surface);
@@ -90,13 +92,14 @@
         }
     </style>
 </head>
+
 <body>
     <div class="app-shell">
         <!-- ── Side Navigation ──────────────────────────────────── -->
         <nav class="side-nav">
             <div class="side-nav__header">
                 <div class="side-nav__project-name">ForgeML</div>
-                <div class="side-nav__version">v1.0.0</div>
+                <div class="side-nav__version">v1.3.1</div>
             </div>
 
             <div class="side-nav__cta">
@@ -114,7 +117,7 @@
                     </a>
                 </li>
                 <li>
-                    <a href="/" class="side-nav__link">
+                    <a href="/datasets" class="side-nav__link">
                         <span class="material-symbols-outlined">database</span>
                         Datasets
                     </a>
@@ -161,7 +164,8 @@
                 <header class="page-header">
                     <div>
                         <h1 class="page-header__title">Data Analysis</h1>
-                        <p class="page-header__subtitle">Select target and feature columns to visualize insights and compare model approaches.</p>
+                        <p class="page-header__subtitle">Select target and feature columns to visualize insights and
+                            compare model approaches.</p>
                     </div>
                 </header>
 
@@ -179,14 +183,15 @@
                                 <label class="form-label">Target Column (y)</label>
                                 <select id="targetSelect" class="form-control" style="max-width: 300px;"></select>
                             </div>
-                            
+
                             <div class="form-group">
                                 <label class="form-label">Feature Columns (X)</label>
-                                <div id="featuresList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin-top: 10px;">
+                                <div id="featuresList"
+                                    style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin-top: 10px;">
                                     <!-- Checkboxes will be injected here -->
                                 </div>
                             </div>
-                            
+
                             <div style="margin-top: 20px; text-align: right;">
                                 <button id="analyzeBtn" class="btn btn-primary">Generate Analysis</button>
                             </div>
@@ -197,7 +202,8 @@
                 <div id="loadingOverlay" class="loading-overlay">
                     <div class="spinner-large"></div>
                     <div class="progress-text" id="progressText">Analyzing dataset... 0%</div>
-                    <p style="margin-top: 10px; color: #64748b;">Computing correlations, generating plots, and evaluating baseline models. This might take a few moments depending on dataset size.</p>
+                    <p style="margin-top: 10px; color: #64748b;">Computing correlations, generating plots, and
+                        evaluating baseline models. This might take a few moments depending on dataset size.</p>
                 </div>
 
                 <div id="resultsArea" style="display: none;">
@@ -266,17 +272,17 @@
             try {
                 const statusRes = await fetch(`${API_BASE}/status`);
                 const status = await statusRes.json();
-                
+
                 if (!status.has_data) {
                     document.getElementById('noDataAlert').style.display = 'block';
                     return;
                 }
-                
+
                 document.getElementById('mainFormArea').style.display = 'block';
-                
+
                 const profileRes = await fetch(`${API_BASE}/profile`);
                 const profile = await profileRes.json();
-                
+
                 columns = profile.column_names;
                 populateForm();
             } catch (err) {
@@ -287,39 +293,39 @@
         function populateForm() {
             const targetSelect = document.getElementById('targetSelect');
             const featuresList = document.getElementById('featuresList');
-            
+
             targetSelect.innerHTML = '';
             featuresList.innerHTML = '';
-            
+
             columns.forEach(col => {
                 // target
                 const option = document.createElement('option');
                 option.value = col;
                 option.textContent = col;
                 targetSelect.appendChild(option);
-                
+
                 // feature
                 const div = document.createElement('div');
                 div.style.display = 'flex';
                 div.style.alignItems = 'center';
                 div.style.gap = '8px';
-                
+
                 const cb = document.createElement('input');
                 cb.type = 'checkbox';
                 cb.value = col;
                 cb.className = 'feature-cb';
                 cb.checked = true; // default checked
                 cb.id = 'cb_' + String(col).replace(/[^A-Za-z0-9_-]/g, '_');
-                
+
                 const label = document.createElement('label');
                 label.htmlFor = cb.id;
                 label.textContent = col;
-                
+
                 div.appendChild(cb);
                 div.appendChild(label);
                 featuresList.appendChild(div);
             });
-            
+
             // Uncheck the last column since it's typically target
             if (columns.length > 0) {
                 targetSelect.value = columns[columns.length - 1];
@@ -338,7 +344,7 @@
         document.getElementById('analyzeBtn').addEventListener('click', async () => {
             const target_column = document.getElementById('targetSelect').value;
             const feature_columns = Array.from(document.querySelectorAll('.feature-cb:checked')).map(cb => cb.value);
-            
+
             if (feature_columns.length === 0) {
                 alert("Please select at least one feature column.");
                 return;
@@ -347,11 +353,11 @@
                 alert("Target column cannot be in feature columns.");
                 return;
             }
-            
+
             // Show loading
             document.getElementById('resultsArea').style.display = 'none';
             document.getElementById('loadingOverlay').style.display = 'flex';
-            
+
             // Simulate progress percentage
             let progress = 0;
             const progressText = document.getElementById('progressText');
@@ -363,38 +369,38 @@
                     progressText.textContent = `Analyzing dataset... ${progress}%`;
                 }
             }, 300);
-            
+
             try {
                 const res = await fetch(`${API_BASE}/analysis`, {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ target_column, feature_columns })
                 });
-                
+
                 const data = await res.json();
-                
+
                 clearInterval(simulationInterval);
                 progressText.textContent = `Analyzing dataset... 100%`;
-                
+
                 if (!res.ok) {
                     throw new Error(data.detail || "Analysis failed");
                 }
-                
+
                 setTimeout(() => {
                     document.getElementById('loadingOverlay').style.display = 'none';
                     renderResults(data);
                 }, 500);
-                
+
             } catch (err) {
                 clearInterval(simulationInterval);
                 document.getElementById('loadingOverlay').style.display = 'none';
                 alert("Error generating analysis: " + err.message);
             }
         });
-        
+
         function renderResults(data) {
             document.getElementById('resultsArea').style.display = 'block';
-            
+
             // Heatmap
             const heatmapCont = document.getElementById('heatmapContainer');
             if (data.correlation_matrix) {
@@ -402,7 +408,7 @@
             } else {
                 heatmapCont.innerHTML = '<p>Not enough numeric columns for correlation matrix.</p>';
             }
-            
+
             // Pairplot
             const pairplotCont = document.getElementById('pairplotContainer');
             if (data.pairplot) {
@@ -410,7 +416,7 @@
             } else {
                 pairplotCont.innerHTML = '<p>Unable to generate pairplot.</p>';
             }
-            
+
             // Boxplots
             const boxplotsCont = document.getElementById('boxplotsContainer');
             if (data.boxplots) {
@@ -418,15 +424,15 @@
             } else {
                 boxplotsCont.innerHTML = '<p>Unable to generate boxplots (no numeric features).</p>';
             }
-            
+
             // Models table
             const tbody = document.getElementById('modelsTableBody');
             tbody.innerHTML = '';
-            
+
             if (data.model_comparisons && data.model_comparisons.length > 0) {
                 document.getElementById('metric1Header').textContent = data.model_comparisons[0].metric1_name;
                 document.getElementById('metric2Header').textContent = data.model_comparisons[0].metric2_name;
-                
+
                 data.model_comparisons.forEach(model => {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
@@ -444,4 +450,5 @@
         document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
+
 </html>

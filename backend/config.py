@@ -14,7 +14,7 @@ REPORTS_DIR.mkdir(exist_ok=True)
 
 # API Configuration
 API_TITLE = "ForgeML"
-API_VERSION = "1.0.0"
+API_VERSION = "1.2.0"
 API_DESCRIPTION = "ML Training Platform with Auto-Generated UI"
 
 # CORS
