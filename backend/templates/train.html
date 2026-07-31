@@ -1,18 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ForgeML — Model Configuration</title>
     <link rel="stylesheet" href="/static/style.css?v=2">
 </head>
+
 <body>
     <div class="app-shell">
         <!-- ── Side Navigation ──────────────────────────────────── -->
         <nav class="side-nav">
             <div class="side-nav__header">
                 <div class="side-nav__project-name">ForgeML</div>
-                <div class="side-nav__version">v1.0.0</div>
+                <div class="side-nav__version">v1.3.1</div>
             </div>
 
             <div class="side-nav__cta">
@@ -30,7 +32,7 @@
                     </a>
                 </li>
                 <li>
-                    <a href="/" class="side-nav__link">
+                    <a href="/datasets" class="side-nav__link">
                         <span class="material-symbols-outlined">database</span>
                         Datasets
                     </a>
@@ -86,7 +88,8 @@
                 <div class="top-nav__actions">
                     <button class="top-nav__icon-btn"><span class="material-symbols-outlined">terminal</span></button>
                     <button class="top-nav__icon-btn"><span class="material-symbols-outlined">settings</span></button>
-                    <button class="top-nav__icon-btn"><span class="material-symbols-outlined">account_circle</span></button>
+                    <button class="top-nav__icon-btn"><span
+                            class="material-symbols-outlined">account_circle</span></button>
                 </div>
             </header>
 
@@ -97,7 +100,8 @@
                     <header class="page-header">
                         <div>
                             <h1 class="page-header__title">Model Configuration</h1>
-                            <p class="page-header__subtitle">Configure training parameters and preprocessing pipeline for current dataset.</p>
+                            <p class="page-header__subtitle">Configure training parameters and preprocessing pipeline
+                                for current dataset.</p>
                         </div>
                         <div class="page-header__meta" id="datasetMeta" style="display:none;">
                             <span class="page-header__meta-dot"></span>
@@ -144,12 +148,14 @@
                                         <!-- Search Filter -->
                                         <div class="search-input-wrapper mb-sm">
                                             <span class="material-symbols-outlined">search</span>
-                                            <input type="text" class="search-input" id="featureSearch" placeholder="Filter columns...">
+                                            <input type="text" class="search-input" id="featureSearch"
+                                                placeholder="Filter columns...">
                                         </div>
 
                                         <!-- Feature Checkbox List -->
                                         <div class="feature-list" id="featureList">
-                                            <p class="text-muted label-sm" style="padding:16px; text-align:center;">Upload a dataset first</p>
+                                            <p class="text-muted label-sm" style="padding:16px; text-align:center;">
+                                                Upload a dataset first</p>
                                         </div>
                                     </section>
                                 </div>
@@ -164,7 +170,10 @@
                                             <span class="material-symbols-outlined">mop</span>
                                             Pipeline Preprocessing
                                         </h2>
-                                        <p class="section__desc" style="padding-bottom: var(--element-gap); border-bottom: 1px solid var(--outline);">Define automated data cleaning and scaling steps applied before training.</p>
+                                        <p class="section__desc"
+                                            style="padding-bottom: var(--element-gap); border-bottom: 1px solid var(--outline);">
+                                            Define automated data cleaning and scaling steps applied before training.
+                                        </p>
 
                                         <div class="preprocess-grid" style="margin-top: var(--gutter);">
                                             <!-- Missing Values -->
@@ -181,7 +190,9 @@
                                                     </label>
                                                     <label class="radio-group__item">
                                                         <input type="radio" name="missing_vals" value="ignore">
-                                                        <span class="radio-group__item-label radio-group__item-label--muted">Ignore (Algorithms handle)</span>
+                                                        <span
+                                                            class="radio-group__item-label radio-group__item-label--muted">Ignore
+                                                            (Algorithms handle)</span>
                                                     </label>
                                                 </div>
                                             </div>
@@ -207,22 +218,28 @@
                                                 </label>
 
                                                 <label class="toggle-item">
-                                                    <span class="toggle-item__label toggle-item__label--muted">Handle Class Imbalance (SMOTE)</span>
+                                                    <span class="toggle-item__label toggle-item__label--muted">Handle
+                                                        Class Imbalance (SMOTE)</span>
                                                     <div class="toggle-switch">
                                                         <input type="checkbox" id="toggleSMOTE">
                                                         <span class="toggle-switch__slider"></span>
                                                     </div>
                                                 </label>
                                             </div>
-                                            
+
                                             <!-- Train / Test Split -->
                                             <div class="split-group" style="margin-top: 16px;">
                                                 <div class="toggle-group__title">Data Split</div>
-                                                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                                <div
+                                                    style="display: flex; justify-content: space-between; margin-bottom: 8px;">
                                                     <label class="form-label">Test Set Size</label>
-                                                    <span id="testSizeDisplay" style="color: var(--text-muted); font-size: 13px;">0.2 (20%)</span>
+                                                    <span id="testSizeDisplay"
+                                                        style="color: var(--text-muted); font-size: 13px;">0.2
+                                                        (20%)</span>
                                                 </div>
-                                                <input type="range" id="testSizeSlider" min="0.1" max="0.9" step="0.05" value="0.2" style="width: 100%;" oninput="document.getElementById('testSizeDisplay').textContent = this.value + ' (' + Math.round(this.value * 100) + '%)'">
+                                                <input type="range" id="testSizeSlider" min="0.1" max="0.9" step="0.05"
+                                                    value="0.2" style="width: 100%;"
+                                                    oninput="document.getElementById('testSizeDisplay').textContent = this.value + ' (' + Math.round(this.value * 100) + '%)'">
                                             </div>
                                         </div>
                                     </section>
@@ -235,11 +252,15 @@
                                                 Algorithm Selection
                                             </h2>
                                             <div class="algo-header__tabs" id="modelTabs">
-                                                <button type="button" class="btn-tab active" data-model="random_forest">Random Forest</button>
+                                                <button type="button" class="btn-tab active"
+                                                    data-model="random_forest">Random Forest</button>
                                                 <button type="button" class="btn-tab" data-model="knn">KNN</button>
-                                                <button type="button" class="btn-tab" data-model="logistic_regression">Log Reg</button>
-                                                <button type="button" class="btn-tab" data-model="linear_regression">Linear Reg</button>
-                                                <button type="button" class="btn-tab" data-model="naive_bayes">Naive Bayes</button>
+                                                <button type="button" class="btn-tab"
+                                                    data-model="logistic_regression">Log Reg</button>
+                                                <button type="button" class="btn-tab"
+                                                    data-model="linear_regression">Linear Reg</button>
+                                                <button type="button" class="btn-tab" data-model="naive_bayes">Naive
+                                                    Bayes</button>
                                             </div>
                                         </div>
 
@@ -256,7 +277,8 @@
                         <div style="margin-top: var(--gutter);">
                             <div class="section" style="max-width: 400px;">
                                 <label class="form-label">Model Name (Optional)</label>
-                                <input type="text" class="form-input" id="modelName" placeholder="e.g., churn_predictor_v1">
+                                <input type="text" class="form-input" id="modelName"
+                                    placeholder="e.g., churn_predictor_v1">
                             </div>
                         </div>
 
@@ -291,7 +313,8 @@
                             <h3 class="label-md uppercase text-muted mb-sm">Performance Metrics</h3>
                             <div class="metrics-grid" id="metricsDisplay"></div>
 
-                            <div id="modelNameInfo" class="alert alert--info hidden" style="margin-bottom: var(--gutter);">
+                            <div id="modelNameInfo" class="alert alert--info hidden"
+                                style="margin-bottom: var(--gutter);">
                                 <strong>📁 Model Name:</strong> <span id="downloadedModelName"></span>
                             </div>
 
@@ -495,7 +518,7 @@
                 const paramName = input.id.replace('hp_', '');
                 hyperparams[paramName] = parseFloat(input.value);
             });
-            
+
             const testSize = parseFloat(document.getElementById('testSizeSlider').value) || 0.2;
 
             const trainingData = {
@@ -620,4 +643,5 @@
         loadDatasetProfile();
     </script>
 </body>
+
 </html>

@@ -11,6 +11,10 @@
 
 **A powerful no-code machine learning platform that lets you build, train, and deploy ML models through an intuitive web interface.**
 
+# ForgeML - Version 1.3.1
+
+<div align="center">
+
 [Quick Start](#-quick-start) • [Features](#-features) • [API Reference](#-api-reference) • [Documentation](#-documentation)
 
 </div>
@@ -46,7 +50,7 @@ cd backend
 python app.py
 ```
 
-## 🎯 All Available Commands
+## 🛠️ All Available Commands
 
 ### Using run.py:
 ```bash
@@ -77,8 +81,9 @@ make reset        # Reset data
 The application will be available at: **http://localhost:8000**
 API docs will be available at: **http://localhost:8000/docs**
 
-## 📋 Features
+## ✨ Features
 
+- **Integrated Dataset Store (New in v1.3!)**: Browse and load massive datasets directly from OpenML. Includes external deep-links to query Kaggle, Google Dataset Search, and GitHub Repositories.
 - **Easy Setup**: One command to install and run
 - **Auto-Reload**: Development server automatically reloads on code changes
 - **Health Check**: Built-in health endpoint at `/health`

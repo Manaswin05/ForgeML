@@ -7,6 +7,8 @@ from typing import Dict, Any
 import joblib
 import logging
 import io
+import requests
+import math
 
 from core.loader import DatasetLoader
 from core.profiler import DatasetProfiler
@@ -17,12 +19,24 @@ from core.exporter import ModelExporter
 from core.analyzer import DatasetAnalyzer
 from api.schemas import (
     DatasetInfo, DatasetProfile, TrainingRequest, TrainingResponse,
-    PredictionRequest, PredictionResponse, ModelExportResponse, ErrorResponse, AnalysisRequest
+    PredictionRequest, PredictionResponse, ModelExportResponse, ErrorResponse, AnalysisRequest, DatasetLoadRequest
 )
 from config import DATASETS_DIR, MODELS_DIR
 
 # Set up logging
 logger = logging.getLogger(__name__)
+
+def clean_nans(obj):
+    """Recursively replace NaN and Infinity with None to make JSON serializable."""
+    if isinstance(obj, dict):
+        return {k: clean_nans(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [clean_nans(i) for i in obj]
+    elif isinstance(obj, float):
+        if math.isnan(obj) or math.isinf(obj):
+            return None
+        return obj
+    return obj
 
 router = APIRouter(prefix="/api", tags=["ForgeML API"])
 
@@ -383,6 +397,240 @@ def generate_analysis(request: AnalysisRequest):
         }
     except Exception as e:
         logger.error(f"Error in analysis: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.get("/search_datasets")
+def search_datasets(query: str):
+    """Search for CSV datasets on OpenML (public, no auth required) and curated list."""
+    results = []
+    
+    # 1. Get fallback matches
+    try:
+        fallbacks = get_fallback_datasets(query).get("results", [])
+        results.extend(fallbacks)
+    except Exception as e:
+        logger.error(f"Error getting fallbacks: {e}")
+        
+    seen_keys = { (d["name"].lower(), d["repository"].lower()) for d in results }
+        
+    # 2. Get OpenML matches
+    try:
+        url = f"https://www.openml.org/api/v1/json/data/list/data_name/{query}"
+        response = requests.get(url, timeout=10)
+        
+        if response.status_code == 200:
+            data = response.json()
+            datasets = data.get("data", {}).get("dataset", [])
+            
+            added = 0
+            for item in datasets:
+                file_id = item.get("file_id")
+                if not file_id:
+                    continue
+                
+                name = f"{item.get('name')}.csv"
+                repo = "OpenML"
+                key = (name.lower(), repo.lower())
+                
+                if key in seen_keys:
+                    continue
+                seen_keys.add(key)
+                
+                raw_url = f"https://www.openml.org/data/get_csv/{file_id}"
+                html_url = f"https://www.openml.org/d/{item.get('did')}"
+                
+                results.append({
+                    "name": name,
+                    "repository": repo,
+                    "url": raw_url,
+                    "source": "OpenML Public Datasets",
+                    "html_url": html_url
+                })
+                
+                added += 1
+                if added >= 20: # Limit to 20 unique OpenML datasets
+                    break
+    except Exception as e:
+        logger.error(f"Error in OpenML search: {e}")
+        
+    # Add External Search Links if query is not empty
+    if query:
+        results.append({
+            "name": f"Search Kaggle for '{query}'",
+            "repository": "kaggle.com",
+            "url": "",
+            "source": "Kaggle",
+            "html_url": f"https://www.kaggle.com/search?q={query}+in%3Adatasets",
+            "is_external": True
+        })
+        results.append({
+            "name": f"Search Google Dataset Search for '{query}'",
+            "repository": "datasetsearch.research.google.com",
+            "url": "",
+            "source": "Google Dataset Search",
+            "html_url": f"https://datasetsearch.research.google.com/search?query={query}",
+            "is_external": True
+        })
+        results.append({
+            "name": f"Search GitHub for '{query}'",
+            "repository": "github.com",
+            "url": "",
+            "source": "GitHub Repositories",
+            "html_url": f"https://github.com/search?q={query}+dataset&type=repositories",
+            "is_external": True
+        })
+        
+    return {"status": "success", "results": results}
+
+def get_fallback_datasets(query: str):
+    """Return some curated fallback datasets."""
+    query = query.lower()
+    all_fallbacks = [
+        {
+            "name": "titanic.csv",
+            "repository": "datasciencedojo/datasets",
+            "url": "https://raw.githubusercontent.com/datasciencedojo/datasets/master/titanic.csv",
+            "source": "GitHub (Curated)",
+            "html_url": "https://github.com/datasciencedojo/datasets/blob/master/titanic.csv"
+        },
+        {
+            "name": "iris.csv",
+            "repository": "mwaskom/seaborn-data",
+            "url": "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv",
+            "source": "GitHub (Curated)",
+            "html_url": "https://github.com/mwaskom/seaborn-data/blob/master/iris.csv"
+        },
+        {
+            "name": "weather_data.csv",
+            "repository": "alanjones2/dataviz",
+            "url": "https://raw.githubusercontent.com/alanjones2/dataviz/master/london2018.csv",
+            "source": "GitHub (Curated)",
+            "html_url": "https://github.com/alanjones2/dataviz/blob/master/london2018.csv"
+        },
+        {
+            "name": "housing.csv",
+            "repository": "ageron/handson-ml",
+            "url": "https://raw.githubusercontent.com/ageron/handson-ml/master/datasets/housing/housing.csv",
+            "source": "GitHub (Curated)",
+            "html_url": "https://github.com/ageron/handson-ml/blob/master/datasets/housing/housing.csv"
+        },
+        {
+            "name": "chat_data.csv",
+            "repository": "t-davidson/hate-speech-and-offensive-language",
+            "url": "https://raw.githubusercontent.com/t-davidson/hate-speech-and-offensive-language/master/data/labeled_data.csv",
+            "source": "GitHub (Curated)",
+            "html_url": "https://github.com/t-davidson/hate-speech-and-offensive-language/blob/master/data/labeled_data.csv"
+        },
+        {
+            "name": "tips.csv",
+            "repository": "mwaskom/seaborn-data",
+            "url": "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/tips.csv",
+            "source": "GitHub (Curated)",
+            "html_url": "https://github.com/mwaskom/seaborn-data/blob/master/tips.csv"
+        },
+        {
+            "name": "penguins.csv",
+            "repository": "mwaskom/seaborn-data",
+            "url": "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/penguins.csv",
+            "source": "GitHub (Curated)",
+            "html_url": "https://github.com/mwaskom/seaborn-data/blob/master/penguins.csv"
+        },
+        {
+            "name": "diamonds.csv",
+            "repository": "mwaskom/seaborn-data",
+            "url": "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/diamonds.csv",
+            "source": "GitHub (Curated)",
+            "html_url": "https://github.com/mwaskom/seaborn-data/blob/master/diamonds.csv"
+        },
+        {
+            "name": "breast_cancer.csv",
+            "repository": "jbrownlee/Datasets",
+            "url": "https://raw.githubusercontent.com/jbrownlee/Datasets/master/breast-cancer.csv",
+            "source": "GitHub (Curated)",
+            "html_url": "https://github.com/jbrownlee/Datasets/blob/master/breast-cancer.csv"
+        },
+        {
+            "name": "customer_churn.csv",
+            "repository": "IBM/telco-customer-churn",
+            "url": "https://raw.githubusercontent.com/IBM/telco-customer-churn-on-icp4d/master/data/Telco-Customer-Churn.csv",
+            "source": "GitHub (Curated)",
+            "html_url": "https://github.com/IBM/telco-customer-churn-on-icp4d/blob/master/data/Telco-Customer-Churn.csv"
+        },
+        {
+            "name": "finance_loan.csv",
+            "repository": "Jovian",
+            "url": "https://raw.githubusercontent.com/JovianML/opendatasets/master/data/loans.csv",
+            "source": "GitHub (Curated)",
+            "html_url": "https://github.com/JovianML/opendatasets/blob/master/data/loans.csv"
+        },
+        {
+            "name": "pima-indians-diabetes.csv",
+            "repository": "jbrownlee/Datasets",
+            "url": "https://raw.githubusercontent.com/jbrownlee/Datasets/master/pima-indians-diabetes.csv",
+            "source": "GitHub (Curated)",
+            "html_url": "https://github.com/jbrownlee/Datasets/blob/master/pima-indians-diabetes.csv"
+        },
+        {
+            "name": "airline-passengers.csv",
+            "repository": "jbrownlee/Datasets",
+            "url": "https://raw.githubusercontent.com/jbrownlee/Datasets/master/airline-passengers.csv",
+            "source": "GitHub (Curated)",
+            "html_url": "https://github.com/jbrownlee/Datasets/blob/master/airline-passengers.csv"
+        },
+        {
+            "name": "mtcars.csv",
+            "repository": "vincentarelbundock/Rdatasets",
+            "url": "https://raw.githubusercontent.com/vincentarelbundock/Rdatasets/master/csv/datasets/mtcars.csv",
+            "source": "GitHub (Curated)",
+            "html_url": "https://github.com/vincentarelbundock/Rdatasets/blob/master/csv/datasets/mtcars.csv"
+        }
+    ]
+    
+    if query:
+        # Match intelligently on name, repo or specific keywords
+        results = []
+        for d in all_fallbacks:
+            if (query in d["name"].lower() or 
+                query in d["repository"].lower() or 
+                (query == "cancer" and "cancer" in d["name"].lower()) or
+                (query == "customer" and "customer" in d["name"].lower()) or
+                (query == "finance" and "loan" in d["name"].lower())):
+                results.append(d)
+    else:
+        results = all_fallbacks
+        
+    return {"status": "success", "results": results}
+
+@router.post("/load_dataset_url")
+async def load_dataset_url(request: DatasetLoadRequest):
+    """Download and load CSV dataset from URL."""
+    try:
+        logger.info(f"Downloading dataset from URL: {request.url}")
+        
+        response = requests.get(request.url)
+        if response.status_code != 200:
+            raise ValueError(f"Failed to fetch dataset: HTTP {response.status_code}")
+            
+        content = response.content
+        file_obj = io.BytesIO(content)
+        
+        # Load dataset
+        df = DatasetLoader.load_csv(file_obj)
+        current_session["df"] = df
+        
+        # Get info
+        info = DatasetLoader.get_dataset_info(df)
+        preview = DatasetLoader.get_preview(df)
+        
+        logger.info(f"Dataset loaded successfully from URL: {info['rows']} rows, {info['columns']} columns")
+        
+        return clean_nans({
+            "status": "success",
+            "info": info,
+            "preview": preview
+        })
+    except Exception as e:
+        logger.error(f"Error downloading dataset: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
 @router.get("/health")

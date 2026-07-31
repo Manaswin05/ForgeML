@@ -50,6 +50,20 @@ async def index():
     except Exception as e:
         return f"<h1>Error loading page</h1><p>{str(e)}</p>"
 
+@app.get("/datasets", response_class=HTMLResponse)
+async def datasets_page():
+    """Serve datasets store page."""
+    try:
+        datasets_path = TEMPLATES_DIR / "datasets.html"
+        if not datasets_path.exists():
+            raise FileNotFoundError(f"Datasets page not found: {datasets_path}")
+        
+        with open(datasets_path, "r", encoding="utf-8") as f:
+            content = f.read()
+        return content
+    except Exception as e:
+        return f"<h1>Error loading page</h1><p>{str(e)}</p>"
+
 @app.get("/train", response_class=HTMLResponse)
 async def train_page():
     """Serve model training configuration page."""

@@ -66,3 +66,6 @@ class AnalysisRequest(BaseModel):
     target_column: str
     feature_columns: List[str]
 
+class DatasetLoadRequest(BaseModel):
+    """Request to load dataset from URL."""
+    url: str

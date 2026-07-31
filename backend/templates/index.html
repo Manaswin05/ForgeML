@@ -1,18 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ForgeML — Dataset Dashboard</title>
     <link rel="stylesheet" href="/static/style.css?v=6">
 </head>
+
 <body>
     <div class="app-shell">
         <!-- ── Side Navigation ──────────────────────────────────── -->
         <nav class="side-nav">
             <div class="side-nav__header">
                 <div class="side-nav__project-name">ForgeML</div>
-                <div class="side-nav__version">v1.0.0</div>
+                <div class="side-nav__version">v1.3.1</div>
             </div>
 
             <div class="side-nav__cta">
@@ -30,7 +32,7 @@
                     </a>
                 </li>
                 <li>
-                    <a href="/" class="side-nav__link">
+                    <a href="/datasets" class="side-nav__link">
                         <span class="material-symbols-outlined">database</span>
                         Datasets
                     </a>
@@ -78,10 +80,13 @@
                 <header class="page-header">
                     <div>
                         <h1 class="page-header__title" id="datasetTitle">Upload a Dataset</h1>
-                        <p class="page-header__subtitle" id="datasetSubtitle">Drag & drop or click below to get started</p>
+                        <p class="page-header__subtitle" id="datasetSubtitle">Drag & drop or click below to get started
+                        </p>
                     </div>
                     <div class="page-header__actions" id="headerActions" style="display:none;">
-                        <button id="resetSessionBtn" class="btn btn-outline" style="margin-right: 12px; border: 1px solid var(--border-color); background: transparent; color: var(--text-color); padding: 8px 16px; border-radius: 8px; cursor: pointer; transition: all 0.2s;">Reset Session</button>
+                        <button id="resetSessionBtn" class="btn btn-outline"
+                            style="margin-right: 12px; border: 1px solid var(--border-color); background: transparent; color: var(--text-color); padding: 8px 16px; border-radius: 8px; cursor: pointer; transition: all 0.2s;">Reset
+                            Session</button>
                         <a href="/train" class="btn btn-primary">Train Model</a>
                     </div>
                 </header>
@@ -136,13 +141,17 @@
                     <div class="card__header">
                         <span class="card__header-title">Dataset Preview</span>
                         <div style="display:flex; gap:8px;">
-                            <button class="btn-ghost"><span class="material-symbols-outlined" style="font-size:18px;">filter_list</span></button>
-                            <button class="btn-ghost"><span class="material-symbols-outlined" style="font-size:18px;">more_vert</span></button>
+                            <button class="btn-ghost"><span class="material-symbols-outlined"
+                                    style="font-size:18px;">filter_list</span></button>
+                            <button class="btn-ghost"><span class="material-symbols-outlined"
+                                    style="font-size:18px;">more_vert</span></button>
                         </div>
                     </div>
                     <div class="data-table-wrapper">
                         <table class="data-table" id="previewTable">
-                            <thead><tr id="previewHead"></tr></thead>
+                            <thead>
+                                <tr id="previewHead"></tr>
+                            </thead>
                             <tbody id="previewBody"></tbody>
                         </table>
                     </div>
@@ -415,4 +424,5 @@
         })();
     </script>
 </body>
+
 </html>
