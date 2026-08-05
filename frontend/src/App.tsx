@@ -21,8 +21,6 @@ const navItems = [
 ];
 
 function Sidebar({ status }: { status: SessionStatus | null }) {
-  const location = useLocation();
-
   return (
     <aside className="sidebar">
       <div className="sidebar-logo">

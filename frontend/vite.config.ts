@@ -13,4 +13,6 @@ export default defineConfig({
       },
     },
   },
+  // Base URL for production - empty for relative paths
+  base: '',
 })
