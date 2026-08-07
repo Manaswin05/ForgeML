@@ -1,4 +1,4 @@
-import { useState, useRef, DragEvent } from 'react';
+import { useState, useRef, type DragEvent } from 'react';
 import { Upload, FileText, AlertCircle, CheckCircle, BarChart2, Database } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { apiService } from '../api';

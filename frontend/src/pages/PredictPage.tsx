@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Zap, AlertCircle, Plus, Trash2 } from 'lucide-react';
+import { Zap, AlertCircle } from 'lucide-react';
 import { apiService } from '../api';
 import type { SessionStatus, PredictionResponse } from '../api';
 
