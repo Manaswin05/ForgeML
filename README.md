@@ -11,7 +11,7 @@
 
 **A powerful no-code machine learning platform that lets you build, train, and deploy ML models through an intuitive web interface.**
 
-# ForgeML - Version 1.3.1
+# ForgeML - Version 1.3.4
 
 <div align="center">
 
