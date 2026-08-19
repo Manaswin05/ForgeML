@@ -1,13 +1,14 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Query, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import HTMLResponse
 from pathlib import Path
 from api.routes import router
-from config import API_TITLE, API_VERSION, API_DESCRIPTION
+from config import CORS_ORIGINS, API_TITLE, API_VERSION, API_DESCRIPTION
+import joblib
+import pandas as pd
 import uvicorn
 import sys
-import os
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -16,10 +17,10 @@ app = FastAPI(
     description=API_DESCRIPTION
 )
 
-# Add CORS middleware — allow all origins in production, specific origins in development
+# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins in production
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -28,56 +29,108 @@ app.add_middleware(
 # Include API routes
 app.include_router(router)
 
+# Setup paths — serve from backend/templates and backend/static
+BASE_DIR = Path(__file__).parent
+TEMPLATES_DIR = BASE_DIR / "templates"
+STATIC_DIR = BASE_DIR / "static"
+
+# ── Page Routes (registered BEFORE static mount) ──────────────────
+
+@app.get("/", response_class=HTMLResponse)
+async def index():
+    """Serve main dashboard page."""
+    try:
+        index_path = TEMPLATES_DIR / "index.html"
+        if not index_path.exists():
+            raise FileNotFoundError(f"Index file not found: {index_path}")
+        
+        with open(index_path, "r", encoding="utf-8") as f:
+            content = f.read()
+        return content
+    except Exception as e:
+        return f"<h1>Error loading page</h1><p>{str(e)}</p>"
+
+@app.get("/datasets", response_class=HTMLResponse)
+async def datasets_page():
+    """Serve datasets store page."""
+    try:
+        datasets_path = TEMPLATES_DIR / "datasets.html"
+        if not datasets_path.exists():
+            raise FileNotFoundError(f"Datasets page not found: {datasets_path}")
+        
+        with open(datasets_path, "r", encoding="utf-8") as f:
+            content = f.read()
+        return content
+    except Exception as e:
+        return f"<h1>Error loading page</h1><p>{str(e)}</p>"
+
+@app.get("/train", response_class=HTMLResponse)
+async def train_page():
+    """Serve model training configuration page."""
+    try:
+        train_path = TEMPLATES_DIR / "train.html"
+        if not train_path.exists():
+            raise FileNotFoundError(f"Train page not found: {train_path}")
+        
+        with open(train_path, "r", encoding="utf-8") as f:
+            content = f.read()
+        return content
+    except Exception as e:
+        return f"<h1>Error loading page</h1><p>{str(e)}</p>"
+
+@app.get("/analysis", response_class=HTMLResponse)
+async def analysis_page():
+    """Serve dataset analysis page."""
+    try:
+        analysis_path = TEMPLATES_DIR / "analysis.html"
+        if not analysis_path.exists():
+            raise FileNotFoundError(f"Analysis page not found: {analysis_path}")
+        
+        with open(analysis_path, "r", encoding="utf-8") as f:
+            content = f.read()
+        return content
+    except Exception as e:
+        return f"<h1>Error loading page</h1><p>{str(e)}</p>"
+
+@app.get("/predict_ui", response_class=HTMLResponse)
+async def predict_page():
+    """Serve prediction page."""
+    try:
+        predict_path = TEMPLATES_DIR / "predict.html"
+        if not predict_path.exists():
+            raise FileNotFoundError(f"Predict page not found: {predict_path}")
+        
+        with open(predict_path, "r", encoding="utf-8") as f:
+            content = f.read()
+        return content
+    except Exception as e:
+        return f"<h1>Error loading page</h1><p>{str(e)}</p>"
+
 @app.get("/health")
 def health_check():
     """Health check endpoint."""
-    return {"status": "healthy", "message": "ForgeML API is running!"}
+    return {"status": "healthy", "message": "ForgeML is running!"}
 
-# Mount static files directory (for frontend build)
-static_dir = Path(__file__).parent / "static"
-if static_dir.exists():
-    app.mount("/static", StaticFiles(directory=static_dir), name="static")
-
-# Serve frontend index.html for all non-API routes
-@app.get("/")
-async def serve_frontend():
-    index_path = static_dir / "index.html"
-    if index_path.exists():
-        return FileResponse(index_path)
-    return {"message": "Frontend not built. Run 'npm run build' in frontend directory."}
-
-@app.get("/{full_path:path}")
-async def catch_all(full_path: str):
-    # Check if it's an API route
-    if full_path.startswith("api/"):
-        return {"error": "Not found"}, 404
-    
-    # Serve frontend files
-    file_path = static_dir / full_path
-    if file_path.exists() and file_path.is_file():
-        return FileResponse(file_path)
-    
-    # Fall back to index.html for client-side routing
-    index_path = static_dir / "index.html"
-    if index_path.exists():
-        return FileResponse(index_path)
-    
-    return {"error": "Not found"}, 404
+# ── Mount static files (AFTER page routes) ────────────────────────
+try:
+    app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+except Exception as e:
+    print(f"Error mounting static files: {e}")
+    raise
 
 # Auto-run server when script is executed directly
 if __name__ == "__main__":
-    print("🔥 Starting ForgeML API Server...")
-    print("🌐 API available at: http://localhost:8000")
-    print("📖 API docs: http://localhost:8000/docs")
-    print("⚛️  Frontend available at: http://localhost:8000")
+    print("🔥 Starting ForgeML Development Server...")
+    print("🌐 Open your browser to: http://localhost:8000")
+    print("📖 API documentation: http://localhost:8000/docs")
     print("Press Ctrl+C to stop the server")
     print("-" * 50)
-
+    
     try:
         uvicorn.run(
-            "app:app",
-            host="0.0.0.0",
-            port=8000,
+            "app:app", 
+            host="0.0.0.0", 
+            port=8000, 
             reload=True,
             reload_dirs=["."],
             log_level="info"

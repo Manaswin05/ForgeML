@@ -108,11 +108,11 @@ async def upload_dataset(file: UploadFile = File(...)):
         
         logger.info(f"Dataset loaded successfully: {info['rows']} rows, {info['columns']} columns")
         
-        return clean_nans({
+        return {
             "status": "success",
             "info": info,
             "preview": preview
-        })
+        }
     except Exception as e:
         logger.error(f"Error uploading dataset: {e}")
         raise HTTPException(status_code=500, detail=f"Error uploading dataset: {str(e)}")
@@ -388,13 +388,13 @@ def generate_analysis(request: AnalysisRequest):
         # Get model comparisons
         model_comparisons = DatasetAnalyzer.compare_models(df, request.feature_columns, request.target_column)
         
-        return clean_nans({
+        return {
             "status": "success",
             "correlation_matrix": corr_matrix,
             "pairplot": pairplot,
             "boxplots": boxplots,
             "model_comparisons": model_comparisons
-        })
+        }
     except Exception as e:
         logger.error(f"Error in analysis: {e}")
         raise HTTPException(status_code=400, detail=str(e))
